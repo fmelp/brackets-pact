@@ -1,0 +1,6 @@
+(load "brackets.repl" true)
+(make-list 10 "hi")
+)
+(* 10 ["lk"]
+[ , , , , , , , , ,]
+[          ]

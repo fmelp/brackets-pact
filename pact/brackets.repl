@@ -1,0 +1,31 @@
+(env-keys ["f193f2c159cc4d21e7cd5c7e28f8b4e9ef2b7d04666e0e53c51adf40e86751ba",
+          "bracket-admin", "bracket-user"])
+(env-data {
+    "master-bracket-keyset": {
+        "keys": [
+            "f193f2c159cc4d21e7cd5c7e28f8b4e9ef2b7d04666e0e53c51adf40e86751ba"
+        ],
+        "pred": "keys-all"
+    },
+    "bracket-admin-keyset": ["bracket-admin"],
+    "bracket-user-keyset": ["bracket-user"]
+}
+)
+
+(begin-tx)
+(load "brackets.pact")
+(verify "brackets")
+(commit-tx)
+
+(begin-tx)
+(use brackets)
+(create-table bracket-table)
+;(env-chain-data {"sender": "bracket-admin"})
+(init-bracket "bracket-admin" "test" "single-elimination" [] ["gators", "muppets", "mutants", "scammers"] [1 2 3 4])
+;(env-chain-data {"sender": "bracket-user"})
+(get-teams-players-seeds "test")
+;enter-bracket (bracket-name:string player-key:string team-name:string team-index:integer)
+(enter-bracket "test" "player-key" "mutants" 2)
+(get-teams-players-seeds "test")
+;(enter-bracket "test" "gators" "bracket-user")
+(commit-tx)

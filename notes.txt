@@ -1,0 +1,10 @@
+when created new project need to remember to:
+  $ sudo chmod 777 initialize-brackets.sh
+
+
+to run:
+//terminal in .../messart-react directory
+npm run start:pact
+//new terminal window
+npm run pact:seed
+npm start
