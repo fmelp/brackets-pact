@@ -127,7 +127,7 @@ class CreateBracketWithSeed extends React.Component {
             })}
           }
         >
-          <option value={0}>PLEASE SELECT NUMBER OF TEAMS</option>
+          <option value={0}>NUMBER OF TEAMS</option>
           <option value={2}>Two</option>
           <option value={4}>Four</option>
           <option value={8}>Eight</option>

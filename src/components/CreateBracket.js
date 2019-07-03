@@ -21,7 +21,6 @@ class CreateBracket extends React.Component {
     this.setState({ teamList }, this.checkInputValidity());
   }
 
-
   renderTextInputs = (numInputs) => {
     let textComponents = [];
     for (let i = 0; i < numInputs; i++) {
@@ -46,26 +45,85 @@ class CreateBracket extends React.Component {
     let teams = this.state.teamList;
     let teamsSet = new Set(teams);
       //has no duplicates and is right length
-      if ((teams.length === teamsSet.size) && (teams.length === this.state.numTeams))  {
+      if ((teams.length === teamsSet.size) && (teams.length === this.state.numTeams) && (this.state.bracketName !== ""))  {
           this.setState({ buttonDisabled: false })
     }
 
   }
 
+  //need to show tx failing if using an already existing name
+  showSubmitButton = (keyset) => {
+    return (
+      <PactContext.Consumer>
+        {({ initBracket }) => {
+          return (
+            <div>
+              <Button variant="contained"
+                disabled={this.state.buttonDisabled}
+                color="primary"
+                style={{ marginBottom: 10, marginTop: 10 }}
+                onClick={() => {
+                  initBracket(
+                    keyset,
+                    this.state.bracketName,
+                    "single-elimination",
+                    this.makeDraw(this.state.teamList),
+                    this.state.teamList
+                  )
+                  //if success should navigate to new page
+                }}>
+                Create Bracket!
+              </Button>
+            </div>
+          )
+        }}
+      </PactContext.Consumer>
+    )
+  }
+
+  //function to make the first round draw for the teams.
+  makeDraw = (teamList) => {
+    console.log(this.makeEmptyArray(teamList));
+    let teamsCopy = teamList.slice();
+    //create empty array format for all rounds
+    let roundLists = this.makeEmptyArray(teamList);
+    let firstRoundDraw = []
+    while (teamsCopy.length > 0) {
+      let pair = [];
+      pair[0] = teamsCopy.shift();
+      pair[1] = teamsCopy.pop();
+      firstRoundDraw.push(pair);
+    }
+    roundLists[0] = firstRoundDraw;
+    return roundLists;
+  }
+
+  makeEmptyArray = (teamList) => {
+    let numTeams = teamList.length;
+    let roundLists = Array((Math.log2(numTeams) + 1)).fill([]);
+    let index = 0;
+    while (numTeams > 1) {
+      roundLists[index] = Array(numTeams / 2).fill(["winner", "winner"]);
+      numTeams = numTeams / 2;
+      index = index + 1;
+    }
+    roundLists[(roundLists.length - 1)] = "winner"
+    return roundLists;
+  }
 
 
   render() {
     return (
       <div>
         <Grid container direction='column'>
-        <text>Please make sure: </text>
-        <text>1. Team names are distinct and in order of their seed</text>
-        <text>2. Bracket name is not already taken</text>
+        <p style={{margin: 5, fontSize: 18}}>Please make sure: </p>
+        <p style={{margin: 5, fontSize: 18}}>1. Team names are distinct and in order of their seed</p>
+        <p style={{margin: 5, fontSize: 18}}>2. Bracket name is not already taken</p>
         <div style={{ marginBottom: 10 }}>
           <TextField
             id="standard-name"
             label={"Bracket Name"}
-            onChange={(e) => this.setState({ bracketName: e.target.value})}
+            onChange={(e) => this.setState({ bracketName: e.target.value}, this.checkInputValidity())}
             margin="normal"
           />
         </div>
@@ -74,10 +132,11 @@ class CreateBracket extends React.Component {
           native
           value={this.state.numTeams}
           onChange={(e) => {
-            this.renderTextInputs(this.state.numTeams)
+            this.renderTextInputs(this.state.numTeams);
             this.setState({
               numTeams: parseInt(e.target.value),
-              teamList: Array(e.target.value).fill("")
+              teamList: Array(e.target.value).fill(""),
+              buttonDisabled: true
             })}
           }
         >
@@ -89,13 +148,11 @@ class CreateBracket extends React.Component {
           <option value={32}>Thirty-Two</option>
         </Select>
           {this.renderTextInputs(this.state.numTeams)}
-          <Button variant="contained"
-            disabled={this.state.buttonDisabled}
-            color="primary"
-            style={{ marginBottom: 10, marginTop: 10 }}
-            onClick={() => console.log('clicked')}>
-            Create Bracket!
-          </Button>
+          <AuthContext.Consumer>
+            {({ keyset }) =>
+              this.showSubmitButton(keyset)
+            }
+          </AuthContext.Consumer>
         </Grid>
       </div>
     );

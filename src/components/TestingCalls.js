@@ -17,7 +17,7 @@ class TestingCalls extends React.Component {
                 color="primary"
                 style={{ marginBottom: 10 }}
 
-                onClick={() => initBracket(keyset, "test2", "single-elimination", [], ["gators", "muppets", "mutants", "scammers"])}>
+                onClick={() => initBracket(keyset, "test44", "single-elimination", [], ["gators", "muppets", "mutants", "scammers"])}>
                 create
               </Button>
               <Button variant="contained"

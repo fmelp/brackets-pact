@@ -48,8 +48,10 @@
     ;;anyone can call this
     (with-read bracket-table bracket-name {
       "teams":= teams,
-      "players":= players}
-      [teams, players]
+      "players":= players,
+      "bracket":= bracket,
+      "status":= status}
+      [teams, players, bracket, status]
     )
   )
 
