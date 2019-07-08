@@ -8,11 +8,13 @@ when created new project need to remember to:
 
 ## running steps
 to run:
-```npm run start:pact
+```
+npm run start:pact
 ```
    then in a new terminal window:
 
-```npm run pact:seed
+```
+npm run pact:seed
 ```
 ```
 npm start
