@@ -55,6 +55,7 @@ class ViewBrackets extends React.Component {
                 ))}
               </Select>
               <p>Status: {selectedTeamsPlayersLists[3]}</p>
+              <p>Price to Enter: ${selectedTeamsPlayersLists[4]}</p>
             </Grid>
             <TournamentView/>
             </div>
@@ -82,26 +83,3 @@ class ViewBrackets extends React.Component {
 }
 
 export default ViewBrackets;
-
-// <Grid container direction='column'>
-//   <Select
-//     style={{ marginBottom: 10 }}
-//     native
-//     value={this.state.selectedBracket}
-//     onChange={(e) => {
-//       this.renderTextInputs(this.state.numTeams);
-//       this.setState({
-//         numTeams: parseInt(e.target.value),
-//         teamList: Array(e.target.value).fill(""),
-//         buttonDisabled: true
-//       })}
-//     }
-//   >
-//     <option value={0}>PLEASE SELECT NUMBER OF TEAMS</option>
-//     <option value={2}>Two</option>
-//     <option value={4}>Four</option>
-//     <option value={8}>Eight</option>
-//     <option value={16}>Sixteen</option>
-//     <option value={32}>Thirty-Two</option>
-//   </Select>
-// </Grid>

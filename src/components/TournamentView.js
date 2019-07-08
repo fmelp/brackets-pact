@@ -16,30 +16,35 @@ class TournamentView extends React.Component {
             <div>
             <Grid container direction='row' alignItems='center' justify='space-between' style={{margin: 20}}>
               {selectedTeamsPlayersLists[2].map((brackets, index) => {
-                if (brackets === "winner") {
+                //last bracket is not a list of pairings but a regular string
+                //  will be either "winner" or "name_of_winning_team"
+                if (typeof brackets === 'string') {
                   return (
                     <div style={{margin: 10}}>
                       <TeamView
-                        key={index}
-                        label="winner"
+                        key={(Math.random() * 10)}
+                        label={brackets}
                       />
                     </div>
                   );
                 } else {
                   return (
                     <div>
-                      {brackets.map((bracket, index) => (
+                      {brackets.map((bracket, i) => {
+                        return (
                           <Grid container direction='column' justify='space-between' style={{margin: 10, marginRight: 10 }}>
                             <TeamView
-                              key={index}
+                              key={(Math.random() * 10)}
                               label={bracket[0]}
+                              indexes={[index, i]}
                             />
                             <TeamView
-                              key={(index + 1000)}
+                              key={(Math.random() * 10)}
                               label={bracket[1]}
+                              indexes={[index, i]}
                             />
                           </Grid>
-                      ))}
+                      )})}
                     </div>
                   );
                 }

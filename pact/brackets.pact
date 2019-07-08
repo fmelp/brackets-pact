@@ -20,14 +20,15 @@
     moneyPool:decimal
     teams:[string]
     players:[string]
-    winner:string)
+    winner:string
+    entryFee:decimal)
     ;guard:guard
 
   (deftable bracket-table:{bracket})
 
 
   (defun init-bracket
-    (admin-key:string bracket-name:string bracket-type:string bracket:list team-list:list)
+    (admin-key:string bracket-name:string bracket-type:string bracket:list team-list:list entry-fee:decimal)
     "initiate a new bracket"
     (enforce (check-bracket-validity bracket) "bracket format not valid")
     ; anyone can init a new bracket.
@@ -40,7 +41,8 @@
        "moneyPool": 0.0,
        "teams": team-list,
        "players": (make-list (length team-list) UNASSIGNED),
-       "winner": UNASSIGNED
+       "winner": UNASSIGNED,
+       "entryFee": entry-fee
      })
   )
 
@@ -50,8 +52,10 @@
       "teams":= teams,
       "players":= players,
       "bracket":= bracket,
-      "status":= status}
-      [teams, players, bracket, status]
+      "status":= status,
+      "entryFee":= entry-fee,
+      "admin":= admin}
+      [teams, players, bracket, status, entry-fee, admin]
     )
   )
 
@@ -60,17 +64,14 @@
     (keys bracket-table)
   )
 
-  (defun enter-bracket (bracket-name:string player-key:string team-name:string team-index:integer)
+
+
+  (defun enter-bracket-w-team (bracket-name:string player-key:string team-name:string team-index:integer)
     (with-read bracket-table bracket-name {
       "teams":= teams,
       "players":= players}
-      ;make sure team exists at that index
       (enforce (= (at team-index teams) team-name) "team and index do not match")
-      ;make sure the team is unassigned
       (enforce (= (at team-index players) UNASSIGNED) "team is already taken")
-
-      ;;make payment here somewhere...
-      ;probably a good place to use a pact
 
       (update bracket-table bracket-name {
         ;im assuming theres a less stupid way to do this
@@ -79,7 +80,7 @@
     )
   )
 
-  (defun advance-bracket (bracket-name:string bracket:list)
+  (defun advance-bracket (admin-key:string bracket-name:string bracket:list)
      ;;check the bracket list validity on the front
      ;maybe some minimal checking here too
      (enforce (check-bracket-validity bracket) "bracket format not valid")
@@ -95,12 +96,12 @@
     true
   )
 
-  (defun finish-bracket (bracket-name:string winner:string final-bracket:list)
+  (defun finish-bracket (admin-key:string bracket-name:string final-bracket:list winner:string)
      ;;called by admin or master
      ;;does all the table clean-up
-     (enforce (check-bracket-validity bracket) "bracket format not valid")
+     (enforce (check-bracket-validity final-bracket) "bracket format not valid")
      (update bracket-table bracket-name {
-         "bracket": bracket,
+         "bracket": final-bracket,
          "status": COMPLETE,
          "winner": winner
      })

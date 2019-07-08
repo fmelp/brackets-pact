@@ -12,13 +12,20 @@ class CreateBracket extends React.Component {
     numTeams: 0,
     teamList: [],
     buttonDisabled: true,
-    bracketName: ""
+    bracketName: "",
+    entryPrice: NaN
   };
 
   onChangeTeamValue = (index, value) => {
     let teamList = this.state.teamList;
     teamList[index] = value;
     this.setState({ teamList }, this.checkInputValidity());
+  }
+
+  onChangeEntryPrice = (value) => {
+    const price = parseFloat(value);
+      console.log(price);
+      this.setState({ entryPrice: price }, this.checkInputValidity());
   }
 
   renderTextInputs = (numInputs) => {
@@ -40,13 +47,20 @@ class CreateBracket extends React.Component {
     return textComponents;
   }
 
+  //this function needs some work....
   checkInputValidity = () => {
+    console.log('checking input...')
     this.setState({ buttonDisabled: true })
     let teams = this.state.teamList;
     let teamsSet = new Set(teams);
       //has no duplicates and is right length
-      if ((teams.length === teamsSet.size) && (teams.length === this.state.numTeams) && (this.state.bracketName !== ""))  {
-          this.setState({ buttonDisabled: false })
+      if ((teams.length === teamsSet.size)
+        && (teams.length === this.state.numTeams)
+        && (this.state.bracketName !== "")
+        && (teams.length !== 0)
+        && (!isNaN(this.state.entryPrice)))  {
+          this.setState({ buttonDisabled: false });
+
     }
 
   }
@@ -68,7 +82,8 @@ class CreateBracket extends React.Component {
                     this.state.bracketName,
                     "single-elimination",
                     this.makeDraw(this.state.teamList),
-                    this.state.teamList
+                    this.state.teamList,
+                    this.state.entryPrice
                   )
                   //if success should navigate to new page
                 }}>
@@ -119,14 +134,23 @@ class CreateBracket extends React.Component {
         <p style={{margin: 5, fontSize: 18}}>Please make sure: </p>
         <p style={{margin: 5, fontSize: 18}}>1. Team names are distinct and in order of their seed</p>
         <p style={{margin: 5, fontSize: 18}}>2. Bracket name is not already taken</p>
-        <div style={{ marginBottom: 10 }}>
+        <div style={{ marginBottom: 1 }}>
           <TextField
             id="standard-name"
             label={"Bracket Name"}
             onChange={(e) => this.setState({ bracketName: e.target.value}, this.checkInputValidity())}
             margin="normal"
           />
+
         </div>
+        <TextField
+          placeholder="$$$$$"
+          id="$$$$$"
+          label={"Entry Price"}
+          onChange={(e) => this.onChangeEntryPrice(e.target.value)}
+          margin="normal"
+        />
+
         <Select
           style={{ marginBottom: 10 }}
           native
@@ -147,6 +171,7 @@ class CreateBracket extends React.Component {
           <option value={16}>Sixteen</option>
           <option value={32}>Thirty-Two</option>
         </Select>
+
           {this.renderTextInputs(this.state.numTeams)}
           <AuthContext.Consumer>
             {({ keyset }) =>
