@@ -8,9 +8,12 @@ when created new project need to remember to:
 
 ## running steps
 to run:
-//terminal in .../brackets-react directory
-```npm run start:pact```
-//new terminal window
+```npm run start:pact
+```
+   then in a new terminal window:
 
 ```npm run pact:seed
-npm start```
+```
+```
+npm start
+```
