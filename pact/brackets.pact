@@ -1,15 +1,21 @@
-(define-keyset 'master-bracket-keyset (read-keyset "master-bracket-keyset"))
+(module brackets BRACKETS-GOVERNANCE
 
-(module brackets 'master-bracket-keyset
+  (defun enforce-brackets-admin ()
+    (enforce-guard (read-keyset "master-bracket-keyset"))
+  )
 
-     ;game initiated, people still signing up
-     (defconst INITIATED:string "initiated")
-     ;people signed up, game in progress
-     (defconst IN_PROGRESS:string "in-progress")
-     ;game finished and winner paid
-     (defconst COMPLETE:string "complete")
-     ;team has no player assigned
-     (defconst UNASSIGNED:string "unassigned")
+  (defcap BRACKETS-GOVERNANCE ()
+    (enforce-brackets-admin)
+  )
+
+   ;game initiated, people still signing up
+   (defconst INITIATED:string "initiated")
+   ;people signed up, game in progress
+   (defconst IN_PROGRESS:string "in-progress")
+   ;game finished and winner paid
+   (defconst COMPLETE:string "complete")
+   ;team has no player assigned
+   (defconst UNASSIGNED:string "unassigned")
 
 
   (defschema bracket
@@ -26,6 +32,11 @@
 
   (deftable bracket-table:{bracket})
 
+  (defcap BRACKET-ADMIN (admin-key:string bracket-name:string)
+    (with-read bracket-table bracket-name { "admin":= admin-key-db }
+      (enforce (= admin-key admin-key-db) "you are not the bracket admin")
+    )
+  )
 
   (defun init-bracket
     (admin-key:string bracket-name:string bracket-type:string bracket:list team-list:list entry-fee:decimal)
@@ -67,11 +78,15 @@
 
 
   (defun enter-bracket-w-team (bracket-name:string player-key:string team-name:string team-index:integer)
+    ;;anyone can enter a bracket
     (with-read bracket-table bracket-name {
       "teams":= teams,
       "players":= players}
       (enforce (= (at team-index teams) team-name) "team and index do not match")
       (enforce (= (at team-index players) UNASSIGNED) "team is already taken")
+      ;here we need to make the payment into the tournament from the player
+      ; probably using a pact
+      ; rest of code wont execute until tx is confirmed
 
       (update bracket-table bracket-name {
         ;im assuming theres a less stupid way to do this
@@ -83,29 +98,35 @@
   (defun advance-bracket (admin-key:string bracket-name:string bracket:list)
      ;;check the bracket list validity on the front
      ;maybe some minimal checking here too
-     (enforce (check-bracket-validity bracket) "bracket format not valid")
-     ;;can only be called by admin of that bracket
-     (update bracket-table bracket-name {
-         "bracket": bracket,
-         "status": IN_PROGRESS
-     })
+     (with-capability (BRACKET-ADMIN admin-key bracket-name)
+       (enforce (check-bracket-validity bracket) "bracket format not valid")
+       ;;can only be called by admin of that bracket
+       (update bracket-table bracket-name {
+           "bracket": bracket,
+           "status": IN_PROGRESS
+       })
+    )
   )
 
   (defun check-bracket-validity (bracket:list)
     ;;find a way to check this properly
+    ;;dont want it to be computationally expensive
+    ;right now its done in the front-end
     true
   )
 
   (defun finish-bracket (admin-key:string bracket-name:string final-bracket:list winner:string)
      ;;called by admin or master
      ;;does all the table clean-up
-     (enforce (check-bracket-validity final-bracket) "bracket format not valid")
-     (update bracket-table bracket-name {
-         "bracket": final-bracket,
-         "status": COMPLETE,
-         "winner": winner
-     })
+     (with-capability (BRACKET-ADMIN admin-key bracket-name)
+       (enforce (check-bracket-validity final-bracket) "bracket format not valid")
+       (update bracket-table bracket-name {
+           "bracket": final-bracket,
+           "status": COMPLETE,
+           "winner": winner
+       })
      ;(pay-winner winner-keyset)
+    )
   )
 
 ;  (defun pay-winner (winner-keyset:keyset)
@@ -113,6 +134,12 @@
      ;;send small cut to master
 ;  )
 
+  ;(defun return-money (admin-key:string bracket-name:string)
+    ;return money to all participants
+    ;then end the game
+;  )
+
+;maybe a good place to compose-capabilities(?)
 ;  (defun delete-bracket (bracket-name:string)
      ;;called by either admin or master
      ;;return money to all participants
@@ -121,7 +148,7 @@
 
 )
 
-(create-table bracket-table)
+  (create-table bracket-table)
 
 ; (create-table bracket-table)
 ; (env-chain-data {"block-time": 1557336000})
