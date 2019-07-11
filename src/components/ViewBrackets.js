@@ -65,10 +65,6 @@ class ViewBrackets extends React.Component {
     )
   }
 
-  showOptions = (bracketNames) => {
-
-  }
-
   render() {
     return (
       <div>

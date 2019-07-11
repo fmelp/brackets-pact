@@ -1,12 +1,12 @@
 import React from "react";
 import AuthContext from "../contexts/AuthContext";
-import PactContext from "../contexts/PactContext";
+import PactBBContext from "../contexts/PactBBContext";
 import Select from '@material-ui/core/Select';
 import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 
-class CreateBracket extends React.Component {
+class CreateBracketBB extends React.Component {
 
   state = {
     numTeams: 0,
@@ -68,7 +68,7 @@ class CreateBracket extends React.Component {
   //need to show tx failing if using an already existing name
   showSubmitButton = (keyset) => {
     return (
-      <PactContext.Consumer>
+      <PactBBContext.Consumer>
         {({ initBracket }) => {
           return (
             <div>
@@ -77,14 +77,16 @@ class CreateBracket extends React.Component {
                 color="primary"
                 style={{ marginBottom: 10, marginTop: 10 }}
                 onClick={() => {
+                  // initBracket = (keyset, bracketName, bracket, entryFee) => {
                   initBracket(
                     keyset,
                     this.state.bracketName,
-                    "single-elimination",
                     this.makeDraw(this.state.teamList),
-                    this.state.teamList,
                     this.state.entryPrice
                   )
+                  alert(`You just create a new tournament with the name ${this.state.bracketName}`)
+                  //wrong page to navigate to
+                  this.props.history.push('/')
                   //if success should navigate to new page
                 }}>
                 Create Bracket!
@@ -92,7 +94,7 @@ class CreateBracket extends React.Component {
             </div>
           )
         }}
-      </PactContext.Consumer>
+      </PactBBContext.Consumer>
     )
   }
 
@@ -184,4 +186,4 @@ class CreateBracket extends React.Component {
   }
 }
 
-export default CreateBracket;
+export default CreateBracketBB;

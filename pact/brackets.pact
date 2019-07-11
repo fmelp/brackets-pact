@@ -17,91 +17,173 @@
    ;team has no player assigned
    (defconst UNASSIGNED:string "unassigned")
 
-
-  (defschema bracket
+  (defschema empty-bracket
+    ;will need to refactor admin to take in a keyset
+    ;not sure how to do this from the frontend though...
     admin:string
-    bracket-type:string
     bracket:list
     status:string
     moneyPool:decimal
-    teams:[string]
     players:[string]
     winner:string
     entryFee:decimal)
     ;guard:guard
 
-  (deftable bracket-table:{bracket})
+  (deftable empty-bracket-table:{empty-bracket})
 
-  (defcap BRACKET-ADMIN (admin-key:string bracket-name:string)
-    (with-read bracket-table bracket-name { "admin":= admin-key-db }
+  (defschema bracket-betting
+    ;will need to refactor admin to take in a keyset
+    ;not sure how to do this from the frontend though...
+    admin:string
+    bracket:list
+    status:string
+    moneyPool:decimal
+    players:[string]
+    players-bets:list
+    winner:string
+    entryFee:decimal)
+
+  (deftable bracket-betting-table:{bracket-betting})
+
+  (defcap BRACKET-ADMIN-BB (admin-key:string bracket-name:string)
+    (with-read bracket-betting-table bracket-name { "admin":= admin-key-db }
       (enforce (= admin-key admin-key-db) "you are not the bracket admin")
     )
   )
 
-  (defun init-bracket
-    (admin-key:string bracket-name:string bracket-type:string bracket:list team-list:list entry-fee:decimal)
+  (defcap BRACKET-ADMIN-EB (admin-key:string bracket-name:string)
+    (with-read empty-bracket-table bracket-name { "admin":= admin-key-db }
+      (enforce (= admin-key admin-key-db) "you are not the bracket admin")
+    )
+  )
+
+  (defun init-empty-bracket
+    (admin-key:string bracket-name:string bracket:list number-players:integer entry-fee:decimal)
     "initiate a new bracket"
     (enforce (check-bracket-validity bracket) "bracket format not valid")
     ; anyone can init a new bracket.
-     (insert bracket-table bracket-name {
+     (insert empty-bracket-table bracket-name {
       ;"admin": (at "sender" (chain-data)),
        "admin": admin-key,
-       "bracket-type": bracket-type,
        "bracket": bracket,
        "status": INITIATED,
        "moneyPool": 0.0,
-       "teams": team-list,
-       "players": (make-list (length team-list) UNASSIGNED),
+       "players": (make-list number-players UNASSIGNED),
        "winner": UNASSIGNED,
        "entryFee": entry-fee
      })
   )
 
-  (defun get-teams-players-seeds (bracket-name:string)
+  (defun init-bracket-betting
+    (admin-key:string bracket-name:string bracket:list entry-fee:decimal)
+    "initiate a new bracket"
+    (enforce (check-bracket-validity bracket) "bracket format not valid")
+    ; anyone can init a new bracket.
+     (insert bracket-betting-table bracket-name {
+      ;"admin": (at "sender" (chain-data)),
+       "admin": admin-key,
+       "bracket": bracket,
+       "status": INITIATED,
+       "moneyPool": 0.0,
+       "players": [],
+       "players-bets": [],
+       "winner": UNASSIGNED,
+       "entryFee": entry-fee
+     })
+  )
+
+  (defun get-bb-info (bracket-name:string)
     ;;anyone can call this
-    (with-read bracket-table bracket-name {
-      "teams":= teams,
+    (with-read bracket-betting-table bracket-name {
+      "players":= players,
+      "players-bets":= players-bets,
+      "bracket":= bracket,
+      "status":= status,
+      "entryFee":= entry-fee,
+      "admin":= admin}
+      [players, bracket, players-bets, status, entry-fee, admin]
+    )
+  )
+
+  (defun get-eb-info (bracket-name:string)
+    ;;anyone can call this
+    (with-read empty-bracket-table bracket-name {
       "players":= players,
       "bracket":= bracket,
       "status":= status,
       "entryFee":= entry-fee,
       "admin":= admin}
-      [teams, players, bracket, status, entry-fee, admin]
+      [players, bracket, status, entry-fee, admin]
     )
   )
 
-  (defun get-bracket-names ()
+  (defun get-brackets-bb ()
     ;;anyone can call this
-    (keys bracket-table)
+    (keys bracket-betting-table)
   )
 
+  (defun get-brackets-eb ()
+    ;;anyone can call this
+    (keys empty-bracket-table)
+  )
 
-
-  (defun enter-bracket-w-team (bracket-name:string player-key:string team-name:string team-index:integer)
-    ;;anyone can enter a bracket
-    (with-read bracket-table bracket-name {
-      "teams":= teams,
+  (defun enter-tournament-eb (bracket-name:string player-key:string player-index:integer)
+    (with-read empty-bracket-table bracket-name {
       "players":= players}
-      (enforce (= (at team-index teams) team-name) "team and index do not match")
-      (enforce (= (at team-index players) UNASSIGNED) "team is already taken")
-      ;here we need to make the payment into the tournament from the player
-      ; probably using a pact
-      ; rest of code wont execute until tx is confirmed
+      ;commented this line out for testing purposes
+      (enforce (!= (contains player-key players) true) "you can only enter once")
+      (enforce (= (at player-index players) UNASSIGNED) "this spot is not available")
 
-      (update bracket-table bracket-name {
-        ;im assuming theres a less stupid way to do this
-        "players": (+ (+ (take team-index players) [player-key]) (take (- (- (- (length players) team-index) 1)) players))
+      ;;make the payment here
+      ;probably use a pact
+      ;dont execute rest of code until tx is confirmed
+
+
+      (update empty-bracket-table bracket-name {
+        "players": (+ (+ (take player-index players) [player-key]) (take (- (- (- (length players) player-index) 1)) players))
       })
     )
   )
 
-  (defun advance-bracket (admin-key:string bracket-name:string bracket:list)
+
+  (defun enter-tournament-bb (bracket-name:string player-key:string player-bet:list)
+    ;there is not limit to how many people can join as long as they pay the entry fee
+    (with-read bracket-betting-table bracket-name {
+     "players":= players,
+     "players-bets":= players-bets}
+
+     (enforce (!= (contains player-key players) true) "you can only enter once")
+
+    ;;get the payment done here
+      (update bracket-betting-table bracket-name {
+        "players": (+ players [player-key]),
+        "players-bets": (+ players-bets [player-bet])}
+      )
+    )
+  )
+
+
+  ;when we make the draw, we pass the draw bracket as bracket param
+  (defun advance-bracket-eb (admin-key:string bracket-name:string bracket:list)
      ;;check the bracket list validity on the front
      ;maybe some minimal checking here too
-     (with-capability (BRACKET-ADMIN admin-key bracket-name)
+     (with-capability (BRACKET-ADMIN-EB admin-key bracket-name)
        (enforce (check-bracket-validity bracket) "bracket format not valid")
        ;;can only be called by admin of that bracket
-       (update bracket-table bracket-name {
+       (update empty-bracket-table bracket-name {
+           "bracket": bracket,
+           "status": IN_PROGRESS
+       })
+    )
+  )
+
+  (defun advance-bracket-bb (admin-key:string bracket-name:string bracket:list)
+     ;;check the bracket list validity on the front
+     ;maybe some minimal checking here too
+     (with-capability (BRACKET-ADMIN-BB admin-key bracket-name)
+       (enforce (check-bracket-validity bracket) "bracket format not valid")
+       ;;can only be called by admin of that bracket
+       (update bracket-betting-table bracket-name {
            "bracket": bracket,
            "status": IN_PROGRESS
        })
@@ -115,16 +197,30 @@
     true
   )
 
-  (defun finish-bracket (admin-key:string bracket-name:string final-bracket:list winner:string)
+  (defun finish-bracket-eb (admin-key:string bracket-name:string final-bracket:list winner:string)
      ;;called by admin or master
      ;;does all the table clean-up
-     (with-capability (BRACKET-ADMIN admin-key bracket-name)
+     (with-capability (BRACKET-ADMIN-EB admin-key bracket-name)
        (enforce (check-bracket-validity final-bracket) "bracket format not valid")
-       (update bracket-table bracket-name {
+       (update empty-bracket-table bracket-name {
            "bracket": final-bracket,
            "status": COMPLETE,
            "winner": winner
        })
+     ;(pay-winner winner-keyset)
+    )
+  )
+
+  (defun finish-bracket-bb (admin-key:string bracket-name:string final-bracket:list)
+     ;;called by admin or master
+     ;;does all the table clean-up
+     (with-capability (BRACKET-ADMIN-BB admin-key bracket-name)
+       (enforce (check-bracket-validity final-bracket) "bracket format not valid")
+       (update bracket-betting-table bracket-name {
+           "bracket": final-bracket,
+           "status": COMPLETE
+       })
+       ;function to figure out who the winners are...
      ;(pay-winner winner-keyset)
     )
   )
@@ -140,7 +236,9 @@
 ;  )
 
 ;maybe a good place to compose-capabilities(?)
+;or enforce-one
 ;  (defun delete-bracket (bracket-name:string)
+
      ;;called by either admin or master
      ;;return money to all participants
      ;;delete game from table
@@ -148,11 +246,16 @@
 
 )
 
-  (create-table bracket-table)
+(create-table bracket-betting-table)
+; (init-bracket-betting "bb-admin" "test-bb" [] 12.3)
+; (enter-tournament-bb "test-bb" "player-bb" [])
+; (get-bb-info "test-bb")
+; (advance-bracket-bb "bb-admin" "test-bb" [1 2 3])
+; (get-bb-info "test-bb")
 
-; (create-table bracket-table)
-; (env-chain-data {"block-time": 1557336000})
-;(env-chain-data {"sender": "somec"})
-; (init-bracket "ssddddt" "single-elimination" [] {"fff":""})
-;(init-bracket "sswt" "single-elimination" [] {"fff":""})
-;(test "sswt")
+(create-table empty-bracket-table)
+; (init-empty-bracket "eb-admin" "test-eb" [] 8 12.3)
+; (enter-tournament-eb "test-eb" "player-eb" 3)
+; (get-eb-info "test-eb")
+; (advance-bracket-eb "eb-admin" "test-eb" [1 2 3])
+; (get-eb-info "test-eb")
