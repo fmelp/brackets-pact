@@ -128,6 +128,12 @@ class ViewBracketsEB extends React.Component {
     }
   }
 
+  isPlayerWinner = (keyset, bracketData) => {
+    if (keyset.publicKey === bracketData[1][bracketData[1].length - 1]){
+      return (<p>You are the winner!</p>);
+    }
+  }
+
 
   showDropdown = (keyset) => {
     return (
@@ -179,6 +185,7 @@ class ViewBracketsEB extends React.Component {
               {this.showCurrentPlayers(bracketData)}
               {this.showSignUp(enterTournament, bracketData, keyset, selectedBracketName)}
               {this.showAdminButtons(keyset, bracketData, selectedBracketName, advanceBracket)}
+              {this.isPlayerWinner(keyset, bracketData)}
             </Grid>
               <TournamentViewEB/>
             </div>

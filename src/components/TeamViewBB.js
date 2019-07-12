@@ -51,9 +51,10 @@ class TeamViewBB extends React.Component {
                     //is player and is not in tournament
                     //  let them modify with setUserSelectedBracket local calls
                     if (bracketData[5] !== keyset.publicKey && !bracketData[0].includes(keyset.publicKey)){
+                      console.log('player in bb')
                       let currentBracket = userSelectedBracket.slice();
                       if (currentBracket[this.props.indexes[0] + 1] === "winner") {
-                        //pick winner here and reload the page
+                        //pick winner here
                         currentBracket[currentBracket.length-1] = this.props.label;
                         console.log(currentBracket);
                         setUserSelectedBracket(currentBracket);

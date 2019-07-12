@@ -14,27 +14,31 @@ class ViewBracketsBB extends React.Component {
   }
 
   showPlayerBracket = (keyset, bracketData, setUserSelectedBracket, userSelectedBracket) => {
+    console.log('step1');
     let components = [];
     //is not admin and tournament is in initiated stage
-    if (bracketData[5] !== keyset.publicKey && bracketData[3] === 'initiated') {
+    if (bracketData[5] !== keyset.publicKey) {
       components.push(
         <p>Your Bracket Picks:</p>
       );
       //is player but has not enetered tournament
-      if (!bracketData[0].includes(keyset.publicKey)) {
+      console.log(bracketData[0])
+      if (!bracketData[0].includes(keyset.publicKey) && bracketData[3] === 'initiated') {
+        console.log('step2');
         //show initial bracket Status
         //let them modify it
         //  pass a copy of the bracket array with initial status
 
         //had to do this if otherwise the set state in the Context went into infinite loop
         if (userSelectedBracket.length === 0){
-          setUserSelectedBracket(bracketData[1].slice())
+          const bracketCopy = bracketData[1].slice()
+          setUserSelectedBracket(bracketCopy)
         }
-        console.log(userSelectedBracket)
         components.push(<TournamentViewBB bracketToShow={userSelectedBracket}/>);
       }
       //is player and has entered tournament
       if (bracketData[0].includes(keyset.publicKey)) {
+        console.log('step3');
         //show their bracket
         //do not let them modify
         //get the index of player's bracket
@@ -110,8 +114,31 @@ class ViewBracketsBB extends React.Component {
       components.push(<p>You are the Admin of this bracket (and cannot play with this account)</p>);
       components.push(<p>Click on the teams below to advance them to next round</p>);
       components.push(<p>NOTE: When you advance the tournament no one else will be able to sign up</p>);
+      if (bracketData[3] === 'complete') {
+        components.push(
+          <Button variant="contained"
+            color="primary"
+            style={{ marginBottom: 10, marginTop: 10 }}
+            onClick={() => {
+              //add functionality to pay the winner
+              //needs to be implemented at contract level first...
+              alert(`you just paid the winner`)
+            }}
+          >
+            Pay Winner
+          </Button>
+        );
+      }
     }
     return components
+  }
+
+  showRealTimeTournament = (keyset, bracketData) => {
+    if (bracketData[3] === 'initiated' && keyset.publicKey !== bracketData[5]) {
+      return (<p>Tournament has not started yet</p>);
+    } else {
+      return (<TournamentViewBB bracketToShow={bracketData[1]}/>);
+    }
   }
 
   showDropdown = (keyset) => {
@@ -167,7 +194,7 @@ class ViewBracketsBB extends React.Component {
               {this.showPlayerBracket(keyset, bracketData, setUserSelectedBracket, userSelectedBracket)}
               {this.showAdminButtons(keyset, bracketData)}
               <p>Real-Time Tournament Status:</p>
-              <TournamentViewBB bracketToShow={bracketData[1]}/>
+              {this.showRealTimeTournament(keyset, bracketData)}
             </div>
           )
         }}

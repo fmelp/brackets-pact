@@ -5,13 +5,30 @@ const Context = React.createContext();
 export class AuthStore extends React.Component {
 
   // admin
+  //init with getting last known keys
   state = {
     keyset: {
-      publicKey: "f193f2c159cc4d21e7cd5c7e28f8b4e9ef2b7d04666e0e53c51adf40e86751ba",
-      secretKey: "60b82fd1ca1634d3338a656d19dfbd60a68e33b2ff6dd92f9289a1a03a521c74"
+      publicKey: localStorage.getItem('publicKey'),
+      secretKey: localStorage.getItem('secretKey')
     }
   }
-  //non-admin 1
+
+  // componentDidMount() {
+  //   console.log('getting mounted')
+  //   this.setState({
+  //     publicKey: localStorage.getItem('publicKey'),
+  //     secretKey: localStorage.getItem('secretKey')
+  //   })
+  // }
+
+
+  // state = {
+  //   keyset: {
+  //     publicKey: "f193f2c159cc4d21e7cd5c7e28f8b4e9ef2b7d04666e0e53c51adf40e86751ba",
+  //     secretKey: "60b82fd1ca1634d3338a656d19dfbd60a68e33b2ff6dd92f9289a1a03a521c74"
+  //   }
+  // }
+  // non-admin 1
   // state = {
   //   keyset: {
   //     publicKey: "fc362c163a97eb6bf62650fa734a07a622a2cdcf03be63a561816607aafd64f7",
@@ -42,16 +59,25 @@ export class AuthStore extends React.Component {
 
   //can call this function from any component wrapped by this context
   //it will be very useful when actual users need to input their keyset
-  onKeysetChange = (publicKey, privateKey) => {
+  onKeysetChange = (publicKey, secretKey) => {
     this.setState({
       keyset: {
         publicKey,
-        privateKey
+        secretKey
       }
-    });
+    }, this.setState({
+      keyset: {
+        publicKey,
+        secretKey
+      }
+    }, console.log(this.state.keyset)));
+    //sets these as last know keys for when we refresh the app 
+    localStorage.setItem('publicKey', publicKey);
+    localStorage.setItem('secretKey', secretKey);
   }
 
   render() {
+    console.log('current keyset:', this.state.keyset);
     return(
       <Context.Provider
         value={{ ...this.state, onKeysetChange: this.onKeysetChange }}

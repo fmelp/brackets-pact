@@ -38,6 +38,7 @@ class CreateBracketEB extends React.Component {
     return (
       <PactEBContext.Consumer>
         {({ initBracket }) => {
+          console.log(keyset);
           return (
             <div>
               <Button variant="contained"

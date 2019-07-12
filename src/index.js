@@ -7,16 +7,15 @@ import CreateBracketBB from "./components/CreateBracketBB";
 import CreateBracketEB from "./components/CreateBracketEB";
 import ViewBracketsBB from './components/ViewBracketsBB';
 import ViewBracketsEB from './components/ViewBracketsEB';
+import LoginSignUp from "./components/LoginSignUp";
 import * as serviceWorker from './serviceWorker';
 import { AuthStore } from "./contexts/AuthContext";
-import { PactStore } from "./contexts/PactContext";
 import { PactBBStore } from "./contexts/PactBBContext";
 import { PactEBStore } from "./contexts/PactEBContext";
 
 const routing = (
   <Router>
     <AuthStore>
-    <PactStore>
     <PactEBStore>
     <PactBBStore>
       <div>
@@ -25,10 +24,10 @@ const routing = (
         <Route exact path="/createeb" component={CreateBracketEB} />
         <Route exact path="/viewbb" component={ViewBracketsBB} />
         <Route exact path="/vieweb" component={ViewBracketsEB} />
+        <Route exact path="/login" component={LoginSignUp} />
       </div>
     </PactBBStore>
     </PactEBStore>
-    </PactStore>
     </AuthStore>
   </Router>
 );

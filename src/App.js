@@ -17,6 +17,15 @@ function App() {
           color="primary"
           style={{ marginBottom: 10, marginTop: 10 }}
         >
+          <Link to="/login">Login or Sign-Up</Link>
+        </Button>
+        <p>
+          Traditional Bracket Betting Section:
+        </p>
+        <Button variant="contained"
+          color="primary"
+          style={{ marginBottom: 10, marginTop: 10 }}
+        >
           <Link to="/createbb">Create Your Own Tournament BB</Link>
         </Button>
 
@@ -26,6 +35,10 @@ function App() {
         >
           <Link to="/viewbb">View or Join Existing Tournaments BB</Link>
         </Button>
+
+        <p>
+          Empty Bracket Tournament Section:
+        </p>
 
         <Button variant="contained"
           color="primary"
