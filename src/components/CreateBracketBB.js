@@ -1,6 +1,7 @@
 import React from "react";
 import AuthContext from "../contexts/AuthContext";
 import PactBBContext from "../contexts/PactBBContext";
+import UserIcon from './UserIcon';
 import Select from '@material-ui/core/Select';
 import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
@@ -72,6 +73,7 @@ class CreateBracketBB extends React.Component {
         {({ initBracket }) => {
           return (
             <div>
+              <UserIcon/>
               <Button variant="contained"
                 disabled={this.state.buttonDisabled}
                 color="primary"
@@ -132,7 +134,7 @@ class CreateBracketBB extends React.Component {
   render() {
     return (
       <div style={{justifyContent:'center', alignItems:'center'}}>
-        <Grid container direction='column'>
+        <Grid container direction='column' alignItems='center'>
         <p style={{margin: 5, fontSize: 18}}>Please make sure: </p>
         <p style={{margin: 5, fontSize: 18}}>1. Team names are distinct and in order of their seed</p>
         <p style={{margin: 5, fontSize: 18}}>2. Bracket name is not already taken</p>

@@ -26,7 +26,7 @@
     moneyPool:decimal
     players:[string]
     winner:string
-    entryFee:decimal)
+    entryFee:string)
     ;guard:guard
 
   (deftable empty-bracket-table:{empty-bracket})
@@ -41,9 +41,18 @@
     players:[string]
     players-bets:list
     winner:string
-    entryFee:decimal)
+    entryFee:string)
 
   (deftable bracket-betting-table:{bracket-betting})
+
+  (defschema users
+    username:string
+    bb-games:list
+    bb-admins:list
+    eb-games:list
+    eb-admins:list)
+
+  (deftable users-table:{users})
 
   (defcap BRACKET-ADMIN-BB (admin-key:string bracket-name:string)
     (with-read bracket-betting-table bracket-name { "admin":= admin-key-db }
@@ -57,8 +66,29 @@
     )
   )
 
+  (defun init-user (user-key:string username:string)
+    (insert users-table user-key {
+      "username": username,
+      "bb-games": [],
+      "bb-admins": [],
+      "eb-games": [],
+      "eb-admins": []
+    })
+  )
+
+  (defun get-user-info (user-key:string)
+    (with-read users-table user-key {
+      "username":=username,
+      "bb-games":=bb-games,
+      "bb-admins":=bb-admins,
+      "eb-games":=eb-games,
+      "eb-admins":=eb-admins}
+      [username, bb-games, bb-admins, eb-games, eb-admins]
+    )
+  )
+
   (defun init-empty-bracket
-    (admin-key:string bracket-name:string bracket:list number-players:integer entry-fee:decimal)
+    (admin-key:string bracket-name:string bracket:list number-players:integer entry-fee:string)
     "initiate a new bracket"
     (enforce (check-bracket-validity bracket) "bracket format not valid")
     ; anyone can init a new bracket.
@@ -75,7 +105,7 @@
   )
 
   (defun init-bracket-betting
-    (admin-key:string bracket-name:string bracket:list entry-fee:decimal)
+    (admin-key:string bracket-name:string bracket:list entry-fee:string)
     "initiate a new bracket"
     (enforce (check-bracket-validity bracket) "bracket format not valid")
     ; anyone can init a new bracket.
@@ -259,3 +289,5 @@
 ; (get-eb-info "test-eb")
 ; (advance-bracket-eb "eb-admin" "test-eb" [1 2 3])
 ; (get-eb-info "test-eb")
+
+(create-table users-table)

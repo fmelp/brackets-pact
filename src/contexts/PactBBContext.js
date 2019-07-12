@@ -54,6 +54,8 @@ export class PactBBStore extends React.Component {
 
   initBracket = (keyset, bracketName, bracket, entryFee) => {
     console.log(`init-ing bb bracket ${bracketName}`);
+    entryFee = entryFee.toFixed(2);
+    // console.log(entryFee);
     const cmdObj = {
       pactCode: `(brackets.init-bracket-betting ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(entryFee)})`,
       keyPairs: keyset

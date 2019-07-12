@@ -5,12 +5,20 @@ import Select from '@material-ui/core/Select';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import TournamentViewBB from "./TournamentViewBB";
+import UserIcon from './UserIcon';
 
 class ViewBracketsBB extends React.Component {
+
 
   state = {
     selectedBracket: "",
     disabledButton: true
+  }
+
+  componentDidMount() {
+    if (this.state.selectedBracket !== "") {
+      window.location.reload()
+    }
   }
 
   showPlayerBracket = (keyset, bracketData, setUserSelectedBracket, userSelectedBracket) => {
@@ -157,7 +165,8 @@ class ViewBracketsBB extends React.Component {
           // getBracketNames(keyset);
           return (
             <div>
-            <Grid container direction='column'>
+            <UserIcon/>
+            <Grid container direction='column' alignItems='center'>
               <Button variant="contained"
                 color="primary"
                 style={{ marginBottom: 10, marginTop: 10 }}
@@ -189,12 +198,14 @@ class ViewBracketsBB extends React.Component {
               </Select>
               <p>Status: {bracketData[3]}</p>
               <p>Price to Enter: ${bracketData[4]}</p>
-            </Grid>
+
               {this.showSignUp(keyset, bracketData, userSelectedBracket, enterTournament)}
               {this.showPlayerBracket(keyset, bracketData, setUserSelectedBracket, userSelectedBracket)}
               {this.showAdminButtons(keyset, bracketData)}
               <p>Real-Time Tournament Status:</p>
               {this.showRealTimeTournament(keyset, bracketData)}
+
+            </Grid>
             </div>
           )
         }}

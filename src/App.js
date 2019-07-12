@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 import CreateBracket from './components/CreateBracket';
 import ViewBrackets from './components/ViewBrackets';
+import UserIcon from './components/UserIcon';
 import Button from '@material-ui/core/Button';
 import { Link } from 'react-router-dom'
 
@@ -9,6 +10,7 @@ import { Link } from 'react-router-dom'
 function App() {
   return (
     <div className="App">
+      <UserIcon/>
       <header className="App-header">
         <p>
           Welcome to Kadena's Blockchain Brackets!
@@ -16,6 +18,7 @@ function App() {
         <Button variant="contained"
           color="primary"
           style={{ marginBottom: 10, marginTop: 10 }}
+          onClick={() => window.location.reload()}
         >
           <Link to="/login">Login or Sign-Up</Link>
         </Button>
@@ -25,6 +28,7 @@ function App() {
         <Button variant="contained"
           color="primary"
           style={{ marginBottom: 10, marginTop: 10 }}
+          onClick={() => window.location.reload()}
         >
           <Link to="/createbb">Create Your Own Tournament BB</Link>
         </Button>
@@ -32,6 +36,7 @@ function App() {
         <Button variant="contained"
           color="primary"
           style={{ marginBottom: 10, marginTop: 10 }}
+          onClick={() => window.location.reload()}
         >
           <Link to="/viewbb">View or Join Existing Tournaments BB</Link>
         </Button>
@@ -43,6 +48,7 @@ function App() {
         <Button variant="contained"
           color="primary"
           style={{ marginBottom: 10, marginTop: 10 }}
+          onClick={() => window.location.reload()}
         >
           <Link to="/createeb">Create Your Own Tournament EB</Link>
         </Button>
@@ -50,6 +56,7 @@ function App() {
         <Button variant="contained"
           color="primary"
           style={{ marginBottom: 10, marginTop: 10 }}
+          onClick={() => window.location.reload()}
         >
           <Link to="/vieweb">View or Join Existing Tournaments EB</Link>
         </Button>

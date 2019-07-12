@@ -49,6 +49,8 @@ export class PactEBStore extends React.Component {
 
 // (admin-key:string bracket-name:string bracket:list number-players:integer entry-fee:decimal)
   initBracket = (keyset, bracketName, bracket, numberPlayers, entryFee) => {
+    //make sure it has 2 decimal places
+    entryFee = entryFee.toFixed(2);
     console.log(`init-ing eb bracket ${bracketName} with ${numberPlayers} players`);
     console.log(`(brackets.init-empty-bracket ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(numberPlayers)} ${JSON.stringify(entryFee)})`)
     const cmdObj = {

@@ -5,11 +5,19 @@ import Select from '@material-ui/core/Select';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import TournamentViewEB from "./TournamentViewEB";
+import UserIcon from './UserIcon';
+
 
 class ViewBracketsEB extends React.Component {
 
   state = {
     selectedBracket: ""
+  }
+
+  componentDidMount() {
+    if (this.state.selectedBracket !== "") {
+      window.location.reload()
+    }
   }
 
   //helper methods
@@ -45,7 +53,7 @@ class ViewBracketsEB extends React.Component {
 
   showSignUp = (enterTournament, bracketData, keyset, bracketName) => {
     //make sure there is space and that tournament has not started
-    if (bracketData[0].includes("unassigned") && bracketData[2] === 'initiated') {
+    if (bracketData[0].includes("unassigned") && bracketData[2] === 'initiated' && !bracketData[0].includes(keyset.publicKey)) {
       const insertIndex = bracketData[0].indexOf("unassigned");
       return (
         <Button variant="contained"
@@ -62,7 +70,7 @@ class ViewBracketsEB extends React.Component {
         </Button>
       );
     } else {
-      if (bracketData[0].length !== 0){
+      if (bracketData[0].length !== 0 && bracketData[2] !== 'initiated'){
         return (
           <p> Tournament is Full!! </p>
         );
@@ -149,7 +157,8 @@ class ViewBracketsEB extends React.Component {
         }) => {
           return (
             <div>
-            <Grid container direction='column'>
+            <UserIcon />
+            <Grid container direction='column' alignItems='center'>
               <Button variant="contained"
                 color="primary"
                 style={{ marginBottom: 10, marginTop: 10 }}
@@ -186,6 +195,7 @@ class ViewBracketsEB extends React.Component {
               {this.showSignUp(enterTournament, bracketData, keyset, selectedBracketName)}
               {this.showAdminButtons(keyset, bracketData, selectedBracketName, advanceBracket)}
               {this.isPlayerWinner(keyset, bracketData)}
+
             </Grid>
               <TournamentViewEB/>
             </div>

@@ -1,6 +1,7 @@
 import React from "react";
 import AuthContext from "../contexts/AuthContext";
 import PactEBContext from "../contexts/PactEBContext";
+import UserIcon from './UserIcon';
 import Select from '@material-ui/core/Select';
 import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
@@ -41,6 +42,7 @@ class CreateBracketEB extends React.Component {
           console.log(keyset);
           return (
             <div>
+              <UserIcon/>
               <Button variant="contained"
                 disabled={this.state.buttonDisabled}
                 color="primary"
@@ -74,7 +76,7 @@ class CreateBracketEB extends React.Component {
   render() {
     return (
       <div style={{justifyContent:'center', alignItems:'center'}}>
-        <Grid container direction='column'>
+        <Grid container direction='column' alignItems='center'>
         <p style={{margin: 5, fontSize: 18}}>Please make sure: </p>
         <p style={{margin: 5, fontSize: 18}}>1. Bracket name is not already taken</p>
         <p style={{margin: 5, fontSize: 18}}>2. </p>
