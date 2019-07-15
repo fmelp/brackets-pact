@@ -16,6 +16,12 @@ class LoginSignUp extends React.Component {
     userName: ""
   }
 
+  // enableLoginButton = (publicKey, allUsers) => {
+  //   if (allUsers.includes(publicKey)) {
+  //     this.setState({ loginButtonDisabled: false });
+  //   }
+  // }
+
   generateKeyPair = () => {
     const keyPairObj = Pact.crypto.genKeyPair();
     this.setState({
@@ -24,7 +30,7 @@ class LoginSignUp extends React.Component {
     })
   }
 
-  showSignUp = (setUserName, onKeysetChange, keyset, getUserInfo) => {
+  showSignUp = (setUserName, onKeysetChange, keyset, getUserInfo, getAllUsers, allUsers) => {
     if (this.state.showSignUp) {
       return (
         <div>
@@ -36,6 +42,8 @@ class LoginSignUp extends React.Component {
             onChange={async (e) => {
               await this.setState({ publicKey: e.target.value });
               onKeysetChange(this.state.publicKey, this.state.secretKey)
+              // getAllUsers(this.state.publicKey);
+              // this.enableLoginButton(this.state.publicKey, allUsers);
             }}
             margin="normal"
           />
@@ -82,7 +90,14 @@ class LoginSignUp extends React.Component {
     return (
       <div>
         <AuthContext.Consumer>
-          {({ keyset, onKeysetChange, setUserName, getUserInfo }) =>
+          {({
+            keyset,
+            onKeysetChange,
+            setUserName,
+            getUserInfo,
+            getAllUsers,
+            allUsers
+          }) =>
           <Grid container direction='column' style={{margin: 20}} alignItems='center'>
             <p>If you ALREADY HAVE a keyset, enter it below</p>
             <p>Then press Login</p>
@@ -107,16 +122,20 @@ class LoginSignUp extends React.Component {
               margin="normal"
             />
             <Button variant="contained"
+              disabled={this.state.loginButtonDisabled}
               color="primary"
               style={{ marginBottom: 10, marginTop: 10 }}
               onClick={() => {
                 console.log(this.state.publicKey, this.state.secretKey)
                 onKeysetChange(this.state.publicKey, this.state.secretKey);
-                // onKeysetChange(this.state.publicKey, this.state.secretKey)
-                // onKeysetChange(this.state.publicKey, this.state.secretKey)
-                // onKeysetChange(this.state.publicKey, this.state.secretKey)
-                getUserInfo(keyset);
-                this.props.history.push('/')
+                getAllUsers(keyset);
+                if (!allUsers.includes(this.state.publicKey)) {
+                  alert('You are not a registered user! Please generate an account below');
+                } else {
+                  getUserInfo(keyset);
+                  this.props.history.push('/')
+                }
+
               }}
             >
               Login
@@ -138,7 +157,7 @@ class LoginSignUp extends React.Component {
             <p>{this.state.publicKeyGen}</p>
             <p>Private key:</p>
             <p>{this.state.secretKeyGen}</p>
-            {this.showSignUp(setUserName, onKeysetChange, keyset, getUserInfo)}
+            {this.showSignUp(setUserName, onKeysetChange, keyset, getUserInfo, getAllUsers, allUsers)}
           </Grid>
           }
         </AuthContext.Consumer>

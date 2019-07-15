@@ -15,11 +15,24 @@ export class AuthStore extends React.Component {
       secretKey: localStorage.getItem('secretKey')
     },
     //[username, bb-games, bb-admins, eb-games, eb-admins]
-    userData: ["", [], [], [], []]
+    userData: ["", [], [], [], []],
+    allUsers: []
   }
+
+  // if anything goes wrong comment above and uncomment below
+  // state = {
+  //   keyset: {
+  //     publicKey: "8c213f005a559f63b8b6551bd1d24e0bfb21d463f902f5b5e9f393092e35c6d0",
+  //     secretKey: "5098d238eafe1229acfc6398d58bba22ec7da21e9242ecd6db0e7fb86a140abe"
+  //   },
+  //   //[username, bb-games, bb-admins, eb-games, eb-admins]
+  //   userData: ["", [], [], [], []],
+  //   allUsers: []
+  // }
 
   componentDidMount() {
     this.getUserInfo(this.state.keyset);
+    console.log(this.state.userData);
   }
 
   getUserInfo = (keyset) => {
@@ -30,8 +43,25 @@ export class AuthStore extends React.Component {
     }
     Pact.fetch.local(cmdObj, API_HOST)
       .then(res => {
-        console.log(res.data);
+        // if (res.status === "failure") {
+        //   alert("This keyset is not registered a user. Please use form below to register")
+        // } else {
+        //   this.setState({ userData: res.data });
+        // }
         this.setState({ userData: res.data });
+      })
+  }
+
+  getAllUsers = (keyset) => {
+    console.log('getting all users list')
+    const cmdObj = {
+      pactCode:`(brackets.get-all-users)`,
+      keyPairs: keyset
+    }
+    Pact.fetch.local(cmdObj, API_HOST)
+      .then(res => {
+        console.log(res.data);
+        this.setState({ allUsers: res.data });
       })
   }
 
@@ -71,7 +101,8 @@ export class AuthStore extends React.Component {
           ...this.state,
           onKeysetChange: this.onKeysetChange,
           setUserName: this.setUserName,
-          getUserInfo: this.getUserInfo
+          getUserInfo: this.getUserInfo,
+          getAllUsers: this.getAllUsers
         }}
       >
         {this.props.children}

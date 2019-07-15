@@ -42,7 +42,7 @@ class CreateBracketEB extends React.Component {
           console.log(keyset);
           return (
             <div>
-              <UserIcon/>
+              <UserIcon history={this.props.history}/>
               <Button variant="contained"
                 disabled={this.state.buttonDisabled}
                 color="primary"

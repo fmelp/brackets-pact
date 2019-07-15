@@ -75,6 +75,11 @@ class ViewBracketsEB extends React.Component {
           <p> Tournament is Full!! </p>
         );
       }
+      if (bracketData[0].length !== 0 && bracketData[2] === 'initiated'){
+        return (
+          <p> You Are Signed Up! Now Waiting for Tournament To Start </p>
+        );
+      }
     }
   }
 
@@ -157,7 +162,7 @@ class ViewBracketsEB extends React.Component {
         }) => {
           return (
             <div>
-            <UserIcon />
+            <UserIcon history={this.props.history}/>
             <Grid container direction='column' alignItems='center'>
               <Button variant="contained"
                 color="primary"

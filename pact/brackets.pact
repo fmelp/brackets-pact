@@ -66,6 +66,13 @@
     )
   )
 
+
+  (defcap IS-REGISTERED-USER (user-key:string)
+    (let ((users (keys users-table)))
+        (enforce (contains user-key users) "you are not a registered user")
+    )
+  )
+
   (defun init-user (user-key:string username:string)
     (insert users-table user-key {
       "username": username,
@@ -87,39 +94,64 @@
     )
   )
 
+  (defun get-all-users ()
+    ;;anyone can call this
+    (keys users-table)
+  )
+
   (defun init-empty-bracket
     (admin-key:string bracket-name:string bracket:list number-players:integer entry-fee:string)
     "initiate a new bracket"
-    (enforce (check-bracket-validity bracket) "bracket format not valid")
-    ; anyone can init a new bracket.
-     (insert empty-bracket-table bracket-name {
-      ;"admin": (at "sender" (chain-data)),
-       "admin": admin-key,
-       "bracket": bracket,
-       "status": INITIATED,
-       "moneyPool": 0.0,
-       "players": (make-list number-players UNASSIGNED),
-       "winner": UNASSIGNED,
-       "entryFee": entry-fee
-     })
+    ;is already a user of our systems
+    (with-capability (IS-REGISTERED-USER admin-key)
+      (enforce (check-bracket-validity bracket) "bracket format not valid")
+      ; anyone can init a new bracket.
+       (insert empty-bracket-table bracket-name {
+        ;"admin": (at "sender" (chain-data)),
+         "admin": admin-key,
+         "bracket": bracket,
+         "status": INITIATED,
+         "moneyPool": 0.0,
+         "players": (make-list number-players UNASSIGNED),
+         "winner": UNASSIGNED,
+         "entryFee": entry-fee
+       })
+       ;insert that this user is an admin for this bracket
+       (with-read users-table admin-key {
+         "eb-admins":=admins-list}
+           (update users-table admin-key {
+             "eb-admins": (+ admins-list [bracket-name])
+           })
+       )
+     )
   )
 
   (defun init-bracket-betting
     (admin-key:string bracket-name:string bracket:list entry-fee:string)
     "initiate a new bracket"
-    (enforce (check-bracket-validity bracket) "bracket format not valid")
-    ; anyone can init a new bracket.
-     (insert bracket-betting-table bracket-name {
-      ;"admin": (at "sender" (chain-data)),
-       "admin": admin-key,
-       "bracket": bracket,
-       "status": INITIATED,
-       "moneyPool": 0.0,
-       "players": [],
-       "players-bets": [],
-       "winner": UNASSIGNED,
-       "entryFee": entry-fee
-     })
+    ;is already a user of our systems
+    (with-capability (IS-REGISTERED-USER admin-key)
+        (enforce (check-bracket-validity bracket) "bracket format not valid")
+        ; anyone can init a new bracket.
+         (insert bracket-betting-table bracket-name {
+          ;"admin": (at "sender" (chain-data)),
+           "admin": admin-key,
+           "bracket": bracket,
+           "status": INITIATED,
+           "moneyPool": 0.0,
+           "players": [],
+           "players-bets": [],
+           "winner": UNASSIGNED,
+           "entryFee": entry-fee
+         })
+         ;insert that this user is an admin for this bracket
+         (with-read users-table admin-key {
+           "bb-admins":=admin-lists}
+             (update users-table admin-key {
+               "bb-admins": (+ admin-lists [bracket-name])
+             })
+         )
+    )
   )
 
   (defun get-bb-info (bracket-name:string)
@@ -158,37 +190,55 @@
   )
 
   (defun enter-tournament-eb (bracket-name:string player-key:string player-index:integer)
-    (with-read empty-bracket-table bracket-name {
-      "players":= players}
-      ;commented this line out for testing purposes
-      (enforce (!= (contains player-key players) true) "you can only enter once")
-      (enforce (= (at player-index players) UNASSIGNED) "this spot is not available")
+    (with-capability (IS-REGISTERED-USER player-key)
+        (with-read empty-bracket-table bracket-name {
+          "players":= players}
+          ;commented this line out for testing purposes
+          (enforce (!= (contains player-key players) true) "you can only enter once")
+          (enforce (= (at player-index players) UNASSIGNED) "this spot is not available")
 
-      ;;make the payment here
-      ;probably use a pact
-      ;dont execute rest of code until tx is confirmed
+          ;;make the payment here
+          ;probably use a pact
+          ;dont execute rest of code until tx is confirmed
 
 
-      (update empty-bracket-table bracket-name {
-        "players": (+ (+ (take player-index players) [player-key]) (take (- (- (- (length players) player-index) 1)) players))
-      })
+          (update empty-bracket-table bracket-name {
+            "players": (+ (+ (take player-index players) [player-key]) (take (- (- (- (length players) player-index) 1)) players))
+          })
+        )
+        ;insert that this user is an admin for this bracket
+         (with-read users-table player-key {
+           "eb-games":=games-list}
+             (update users-table player-key {
+               "eb-games": (+ games-list [bracket-name])
+             })
+         )
     )
   )
 
 
   (defun enter-tournament-bb (bracket-name:string player-key:string player-bet:list)
-    ;there is not limit to how many people can join as long as they pay the entry fee
-    (with-read bracket-betting-table bracket-name {
-     "players":= players,
-     "players-bets":= players-bets}
+    (with-capability (IS-REGISTERED-USER player-key)
+        ;there is not limit to how many people can join as long as they pay the entry fee
+        (with-read bracket-betting-table bracket-name {
+         "players":= players,
+         "players-bets":= players-bets}
 
-     (enforce (!= (contains player-key players) true) "you can only enter once")
+         (enforce (!= (contains player-key players) true) "you can only enter once")
 
-    ;;get the payment done here
-      (update bracket-betting-table bracket-name {
-        "players": (+ players [player-key]),
-        "players-bets": (+ players-bets [player-bet])}
-      )
+        ;;get the payment done here
+          (update bracket-betting-table bracket-name {
+            "players": (+ players [player-key]),
+            "players-bets": (+ players-bets [player-bet])}
+          )
+        )
+        ;insert that this user is an admin for this bracket
+         (with-read users-table player-key {
+           "bb-games":=games-list}
+             (update users-table player-key {
+               "bb-games": (+ games-list [bracket-name])
+             })
+         )
     )
   )
 

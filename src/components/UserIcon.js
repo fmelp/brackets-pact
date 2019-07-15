@@ -10,15 +10,25 @@ class UserIcon extends React.Component {
       <AuthContext.Consumer>
         {({ keyset, getUserInfo, userData }) => {
           let userName = "please log in"
-          if (userData[0]) {
+          if (userData) {
             userName = userData[0]
           }
           return (
             <Chip
-              avatar={<Avatar>UN</Avatar>}
+              avatar={<Avatar>HI!</Avatar>}
               label={userName}
               clickable
               color="primary"
+              onClick={() => {
+                if (userData) {
+                  this.props.history.push('/userinfo');
+                  window.location.reload();
+                } else {
+                  this.props.history.push('/login');
+                  window.location.reload();
+                }
+
+              }}
             />
           );
         }}

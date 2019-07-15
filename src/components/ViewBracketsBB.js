@@ -165,7 +165,7 @@ class ViewBracketsBB extends React.Component {
           // getBracketNames(keyset);
           return (
             <div>
-            <UserIcon/>
+            <UserIcon history={this.props.history}/>
             <Grid container direction='column' alignItems='center'>
               <Button variant="contained"
                 color="primary"
