@@ -125,10 +125,12 @@ class LoginSignUp extends React.Component {
               disabled={this.state.loginButtonDisabled}
               color="primary"
               style={{ marginBottom: 10, marginTop: 10 }}
-              onClick={() => {
+              onClick={async () => {
                 console.log(this.state.publicKey, this.state.secretKey)
                 onKeysetChange(this.state.publicKey, this.state.secretKey);
-                getAllUsers(keyset);
+                console.log(allUsers);
+                await getAllUsers(keyset);
+                console.log(allUsers);
                 if (!allUsers.includes(this.state.publicKey)) {
                   alert('You are not a registered user! Please generate an account below');
                 } else {
@@ -149,6 +151,7 @@ class LoginSignUp extends React.Component {
               onClick={() => {
                 this.generateKeyPair()
                 this.setState({ showSignUp: true });
+                getAllUsers(keyset);
               }}
             >
               Generate

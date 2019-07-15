@@ -32,6 +32,7 @@ export class AuthStore extends React.Component {
 
   componentDidMount() {
     this.getUserInfo(this.state.keyset);
+    this.getAllUsers(this.state.keyset);
     console.log(this.state.userData);
   }
 
@@ -54,6 +55,7 @@ export class AuthStore extends React.Component {
 
   getAllUsers = (keyset) => {
     console.log('getting all users list')
+    console.log(this.state.allUsers);
     const cmdObj = {
       pactCode:`(brackets.get-all-users)`,
       keyPairs: keyset
@@ -63,6 +65,7 @@ export class AuthStore extends React.Component {
         console.log(res.data);
         this.setState({ allUsers: res.data });
       })
+    console.log(this.state.allUsers);
   }
 
   setUserName = (keyset, username) => {
