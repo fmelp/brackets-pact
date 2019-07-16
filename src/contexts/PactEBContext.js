@@ -8,8 +8,8 @@ const Context = React.createContext();
 export class PactEBStore extends React.Component {
 
   state = {
-    //res => [players, bracket, status, entry-fee, admin]
-    bracketData: [[], [], "", "", ""],
+    //res => [players, bracket, status, entry-fee, admin, usernames]
+    bracketData: [[], [], "", "", "", {}],
     bracketNames: [],
     selectedBracketName: ""
   };
@@ -27,7 +27,6 @@ export class PactEBStore extends React.Component {
     }
     Pact.fetch.local(cmdObj, API_HOST)
       .then(res => {
-        console.log(res.data);
         this.setState({ bracketNames: res.data });
       })
   }
@@ -43,7 +42,11 @@ export class PactEBStore extends React.Component {
     Pact.fetch.local(cmdObj, API_HOST)
       .then(res => {
         console.log(res.data);
-        this.setState({ bracketData: res.data });
+        let data = res.data;
+        let keyUsernameMap = {};
+        //make last element a map of key => username for viewing simplicity
+        data[5] = data[0].reduce((o, k, i) => ({...o, [k]: data[5][i]}), {});
+        this.setState({ bracketData: data });
       })
   }
 

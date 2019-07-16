@@ -26,7 +26,8 @@
     moneyPool:decimal
     players:[string]
     winner:string
-    entryFee:string)
+    entryFee:string
+    usernames:[string])
     ;guard:guard
 
   (deftable empty-bracket-table:{empty-bracket})
@@ -84,13 +85,15 @@
   )
 
   (defun get-user-info (user-key:string)
-    (with-read users-table user-key {
-      "username":=username,
-      "bb-games":=bb-games,
-      "bb-admins":=bb-admins,
-      "eb-games":=eb-games,
-      "eb-admins":=eb-admins}
-      [username, bb-games, bb-admins, eb-games, eb-admins]
+    (with-capability (IS-REGISTERED-USER user-key)
+        (with-read users-table user-key {
+          "username":=username,
+          "bb-games":=bb-games,
+          "bb-admins":=bb-admins,
+          "eb-games":=eb-games,
+          "eb-admins":=eb-admins}
+          [username, bb-games, bb-admins, eb-games, eb-admins]
+        )
     )
   )
 
@@ -114,7 +117,8 @@
          "moneyPool": 0.0,
          "players": (make-list number-players UNASSIGNED),
          "winner": UNASSIGNED,
-         "entryFee": entry-fee
+         "entryFee": entry-fee,
+         "usernames": (make-list number-players UNASSIGNED)
        })
        ;insert that this user is an admin for this bracket
        (with-read users-table admin-key {
@@ -174,8 +178,9 @@
       "bracket":= bracket,
       "status":= status,
       "entryFee":= entry-fee,
-      "admin":= admin}
-      [players, bracket, status, entry-fee, admin]
+      "admin":= admin,
+      "usernames":=usernames}
+      [players, bracket, status, entry-fee, admin, usernames]
     )
   )
 
@@ -191,27 +196,30 @@
 
   (defun enter-tournament-eb (bracket-name:string player-key:string player-index:integer)
     (with-capability (IS-REGISTERED-USER player-key)
-        (with-read empty-bracket-table bracket-name {
-          "players":= players}
-          ;commented this line out for testing purposes
-          (enforce (!= (contains player-key players) true) "you can only enter once")
-          (enforce (= (at player-index players) UNASSIGNED) "this spot is not available")
-
-          ;;make the payment here
-          ;probably use a pact
-          ;dont execute rest of code until tx is confirmed
-
-
-          (update empty-bracket-table bracket-name {
-            "players": (+ (+ (take player-index players) [player-key]) (take (- (- (- (length players) player-index) 1)) players))
-          })
-        )
-        ;insert that this user is an admin for this bracket
+                ;insert that this user is an admin for this bracket
          (with-read users-table player-key {
-           "eb-games":=games-list}
+           "eb-games":= games-list,
+           "username":= username}
              (update users-table player-key {
                "eb-games": (+ games-list [bracket-name])
              })
+            (with-read empty-bracket-table bracket-name {
+              "players":= players,
+              "usernames":=usernames}
+              ;commented this line out for testing purposes
+              (enforce (!= (contains player-key players) true) "you can only enter once")
+              (enforce (= (at player-index players) UNASSIGNED) "this spot is not available")
+
+              ;;make the payment here
+              ;probably use a pact
+              ;dont execute rest of code until tx is confirmed
+
+
+              (update empty-bracket-table bracket-name {
+                "players": (+ (+ (take player-index players) [player-key]) (take (- (- (- (length players) player-index) 1)) players)),
+                "usernames": (+ (+ (take player-index usernames) [username]) (take (- (- (- (length usernames) player-index) 1)) usernames))
+              })
+            )
          )
     )
   )
@@ -326,6 +334,12 @@
 
 )
 
+
+
+
+
+(create-table users-table)
+
 (create-table bracket-betting-table)
 ; (init-bracket-betting "bb-admin" "test-bb" [] 12.3)
 ; (enter-tournament-bb "test-bb" "player-bb" [])
@@ -339,5 +353,3 @@
 ; (get-eb-info "test-eb")
 ; (advance-bracket-eb "eb-admin" "test-eb" [1 2 3])
 ; (get-eb-info "test-eb")
-
-(create-table users-table)

@@ -84,11 +84,12 @@ class ViewBracketsEB extends React.Component {
   }
 
   showCurrentPlayers = (bracketData) => {
+    console.log(bracketData)
     const removeBlanks = bracketData[0].filter(x => x !== 'unassigned');
     let components = []
     components.push(<p>current players:</p>)
     removeBlanks.map(player => {
-      components.push(<p>{player}</p>)
+      components.push(<p>{bracketData[5][player]}</p>)
     });
     return components
   }

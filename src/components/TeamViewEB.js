@@ -37,13 +37,19 @@ class TeamViewEB extends React.Component {
           advanceBracket,
           finishBracket
         }) => {
+          let chipLabel = this.props.label;
+          console.log(Object.keys(bracketData[5]));
+          //show username instead of key
+          if (Object.keys(bracketData[5]).includes(this.props.label)) {
+            chipLabel = bracketData[5][this.props.label];
+          }
           return (
             <div>
               <Chip
                 key={(Math.random() * 10)}
                 size='medium'
                 style={{height: 30, width:100}}
-                label={this.props.label}
+                label={chipLabel}
                 onClick={() => {
                   //if is admin
                   if (bracketData[4] === keyset.publicKey){

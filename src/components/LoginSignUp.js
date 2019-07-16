@@ -131,7 +131,7 @@ class LoginSignUp extends React.Component {
                 console.log(allUsers);
                 await getAllUsers(keyset);
                 console.log(allUsers);
-                if (!allUsers.includes(this.state.publicKey)) {
+                if (!allUsers || !allUsers.includes(this.state.publicKey)) {
                   alert('You are not a registered user! Please generate an account below');
                 } else {
                   getUserInfo(keyset);
