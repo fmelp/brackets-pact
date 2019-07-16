@@ -15,6 +15,35 @@ class TeamViewBB extends React.Component {
   }
 
 
+  //[bracket], [[bracket], [bracket]...]
+  getWinner = (finalBracket, playerBrackets, players) => {
+    //placeholder array to put players scores in
+    let playerPoints = Array(playerBrackets.length).fill(0);
+    //loop through every player's bracket
+    playerBrackets.forEach((playerBracket, resultIndex) => {
+      for (let roundIndex = 0; roundIndex < playerBracket.length; roundIndex++) {
+        //scoring power of two for every round
+        //means they will get 1 point at round 0 even though its obvious
+        const points = 2 ** roundIndex;
+        for (let teamIndex = 0; teamIndex < playerBracket[roundIndex].length; teamIndex++) {
+          // check first game in tuple
+          if (finalBracket[roundIndex][teamIndex][0] === playerBracket[roundIndex][teamIndex][0]) {
+            playerPoints[resultIndex] = playerPoints[resultIndex] + points
+          }
+          // check second game in tuple
+          if (finalBracket[roundIndex][teamIndex][1] === playerBracket[roundIndex][teamIndex][1]) {
+            playerPoints[resultIndex] = playerPoints[resultIndex] + points
+          }
+        }
+      }
+    })
+    //this means that if scores are tied first to enter wins...
+    const highestScorerIndex = playerPoints.indexOf(Math.max(...playerPoints))
+    //return the "winner's" key
+    return players[highestScorerIndex];
+  }
+
+
   updateBracketArray = (currentBracket, roundIndex, pairingIndex, teamName) => {
     //we deal with the case of picking tourment winner in onClick()
     const nextRound = roundIndex + 1;
@@ -77,8 +106,11 @@ class TeamViewBB extends React.Component {
                         currentBracket[currentBracket.length-1] = this.props.label;
                         console.log(currentBracket);
                         // finishBracket = (keyset, bracketName, winner, bracket)
-                        finishBracket(keyset, selectedBracketName, this.props.label, currentBracket);
-                        alert(`you picked the winner as: ${this.props.label}`);
+                        //note this winner is the winner from the players, not the team that won!
+                        const winner = this.getWinner(bracketData[1].slice(), bracketData[2].slice(), bracketData[0].slice());
+                        finishBracket(keyset, selectedBracketName, winner, currentBracket);
+                        console.log(bracketData);
+                        alert(`you picked the winning team as: ${this.props.label}`);
                       //is advancing team from any round
                       } else {
                         console.log(this.props.indexes);
@@ -91,70 +123,6 @@ class TeamViewBB extends React.Component {
                       }
                       window.location.reload();
                     }
-
-                    //is admin
-                    //  let the modify with pact calls
-
-
-
-                    // //is admin
-                    // if (bracketData[5] === keyset.publicKey) {
-                    // }
-                    // //is regular player
-                    // else {
-                    //   let currentBracket = bracketData[1].slice();
-                    //   //is picking final winner
-                    //   if (currentBracket[this.props.indexes[0] + 1] === "winner") {
-                    //     //pick winner here and reload the page
-                    //     currentBracket[currentBracket.length-1] = this.props.label;
-                    //     console.log(currentBracket);
-                    //     finishBracket(keyset, selectedBracketName, this.props.label, currentBracket);
-                    //     alert(`you picked the winner as: ${this.props.label}`);
-                    //   //is advancing team from any round
-                    //   } else {
-                    //     console.log(this.props.indexes);
-                    //     console.log(currentBracket);
-                    //     let updatedBracket = this.updateBracketArray(currentBracket, this.props.indexes[0], this.props.indexes[1], this.props.label);
-                    //     console.log(updatedBracket);
-                    //     advanceBracket(keyset, selectedBracketName, updatedBracket);
-                    //     alert(`you advanced team ${this.props.label} to round ${this.props.indexes[0] + 1}`);
-                    //   }
-                    // }
-                  // if (this.isTeamAvailable(selectedTeamsPlayersLists, this.props.label)) {
-                  //   enterBracket(keyset, selectedBracketName, this.props.label, selectedTeamsPlayersLists[0].indexOf(this.props.label));
-                  //   alert('you have entered the tournament');
-                  //   //reload the whole page to show new info.
-                  //   window.location.reload();
-                  // } else {
-                  //   //if admin, let them progress that team
-                  //   //  admin address is selectedTeamsPlayersLists[5]
-                  //   //else tell them they cannot select
-                  //   //make sure it isnt final
-                  //
-                  //   //is admin
-                  //   if (selectedTeamsPlayersLists[5] === keyset.publicKey) {
-                  //     let currentBracket = selectedTeamsPlayersLists[2].slice();
-                  //     //is picking final winner
-                  //     if (currentBracket[this.props.indexes[0] + 1] === "winner") {
-                  //       //pick winner here and reload the page
-                  //       currentBracket[currentBracket.length-1] = this.props.label;
-                  //       console.log(currentBracket);
-                  //       finishBracket(keyset, selectedBracketName, this.props.label, currentBracket);
-                  //       alert(`you picked the winner as: ${this.props.label}`);
-                  //     //is advancing team from any round
-                  //     } else {
-                  //       console.log(this.props.indexes);
-                  //       console.log(currentBracket);
-                  //       let updatedBracket = this.updateBracketArray(currentBracket, this.props.indexes[0], this.props.indexes[1], this.props.label);
-                  //       console.log(updatedBracket);
-                  //       advanceBracket(keyset, selectedBracketName, updatedBracket);
-                  //       alert(`you advanced team ${this.props.label} to round ${this.props.indexes[0] + 1}`);
-                  //     }
-                  //   //is not an admin and can only pick an available team
-                  //   } else {
-                  //     alert('you cannot select this, please pick a blue icon')
-                  //   }
-                  // }
 
                 }}
                 color={this.isTeamAvailable() ? 'primary' : 'secondary'}

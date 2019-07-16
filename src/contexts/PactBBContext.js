@@ -93,9 +93,9 @@ export class PactBBStore extends React.Component {
 
   finishBracket = (keyset, bracketName, winner, bracket) => {
     console.log('finishing bracket bb');
-    console.log(`(brackets.finish-bracket-bb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)})`)
+    console.log(`(brackets.finish-bracket-bb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(winner)})`)
     const cmdObj = {
-      pactCode: `(brackets.finish-bracket-bb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)})`,
+      pactCode: `(brackets.finish-bracket-bb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(winner)})`,
       keyPairs: keyset
     }
     Pact.fetch.send(cmdObj, API_HOST);

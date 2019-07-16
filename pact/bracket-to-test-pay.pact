@@ -48,6 +48,7 @@
 
   (defschema users
     username:string
+    balance:decimal
     bb-games:list
     bb-admins:list
     eb-games:list
@@ -67,6 +68,23 @@
     )
   )
 
+  (defcap USER-CAN-TRANSFER (from:string amount:decimal)
+    (with-read users-table from { "balance" := from-bal }
+      (enforce (>= from-bal amount) "Insufficient Funds")
+    )
+  )
+
+  (defcap EB-CONTRACT-CAN-TRANSFER (bracket-name:string amount:decimal)
+    (with-read empty-bracket-table bracket-name { "moneyPool" := from-bal }
+      (enforce (>= from-bal amount) "Insufficient Funds")
+    )
+  )
+
+  (defcap BB-CONTRACT-CAN-TRANSFER (bracket-name:string amount:decimal)
+    (with-read bracket-betting-table bracket-name { "moneyPool" := from-bal }
+      (enforce (>= from-bal amount) "Insufficient Funds")
+    )
+  )
 
   (defcap IS-REGISTERED-USER (user-key:string)
     (let ((users (keys users-table)))
@@ -77,6 +95,7 @@
   (defun init-user (user-key:string username:string)
     (insert users-table user-key {
       "username": username,
+      "balance": 100.0,
       "bb-games": [],
       "bb-admins": [],
       "eb-games": [],
@@ -91,8 +110,9 @@
           "bb-games":=bb-games,
           "bb-admins":=bb-admins,
           "eb-games":=eb-games,
-          "eb-admins":=eb-admins}
-          [username, bb-games, bb-admins, eb-games, eb-admins]
+          "eb-admins":=eb-admins,
+          "balance":= balance}
+          [username, bb-games, bb-admins, eb-games, eb-admins, balance]
         )
     )
   )
@@ -199,13 +219,14 @@
                 ;insert that this user is an admin for this bracket
          (with-read users-table player-key {
            "eb-games":= games-list,
-           "username":= username}
-             (update users-table player-key {
-               "eb-games": (+ games-list [bracket-name])
-             })
+           "username":= username,
+           "balance":= balance}
+
             (with-read empty-bracket-table bracket-name {
               "players":= players,
-              "usernames":=usernames}
+              "usernames":=usernames,
+              "entryFee":= entry-fee,
+              "moneyPool":= money-pool}
               ;commented this line out for testing purposes
               (enforce (!= (contains player-key players) true) "you can only enter once")
               (enforce (= (at player-index players) UNASSIGNED) "this spot is not available")
@@ -213,12 +234,18 @@
               ;;make the payment here
               ;probably use a pact
               ;dont execute rest of code until tx is confirmed
+              (with-capability (USER-CAN-TRANSFER player-key entry-fee)
 
-
-              (update empty-bracket-table bracket-name {
-                "players": (+ (+ (take player-index players) [player-key]) (take (- (- (- (length players) player-index) 1)) players)),
-                "usernames": (+ (+ (take player-index usernames) [username]) (take (- (- (- (length usernames) player-index) 1)) usernames))
-              })
+                  (update users-table player-key {
+                   "eb-games": (+ games-list [bracket-name]),
+                   "balance": (- balance entry-fee)
+                  })
+                  (update empty-bracket-table bracket-name {
+                    "players": (+ (+ (take player-index players) [player-key]) (take (- (- (- (length players) player-index) 1)) players)),
+                    "usernames": (+ (+ (take player-index usernames) [username]) (take (- (- (- (length usernames) player-index) 1)) usernames)),
+                    "moneyPool": (+ money-pool entry-fee)
+                  })
+            )
             )
          )
     )
@@ -227,25 +254,34 @@
 
   (defun enter-tournament-bb (bracket-name:string player-key:string player-bet:list)
     (with-capability (IS-REGISTERED-USER player-key)
-        ;there is not limit to how many people can join as long as they pay the entry fee
-        (with-read bracket-betting-table bracket-name {
-         "players":= players,
-         "players-bets":= players-bets}
+        (with-read users-table player-key {
+           "bb-games":=games-list,
+           "balance":=balance}
+            ;there is not limit to how many people can join as long as they pay the entry fee
+            (with-read bracket-betting-table bracket-name {
+             "players":= players,
+             "players-bets":= players-bets,
+             "entryFee":= entry-fee,
+             "moneyPool":= money-pool}
 
-         (enforce (!= (contains player-key players) true) "you can only enter once")
+             (enforce (!= (contains player-key players) true) "you can only enter once")
 
-        ;;get the payment done here
-          (update bracket-betting-table bracket-name {
-            "players": (+ players [player-key]),
-            "players-bets": (+ players-bets [player-bet])}
-          )
+            (with-capability (USER-CAN-TRANSFER player-key entry-fee)
+            ;;get the payment done here
+                  (update bracket-betting-table bracket-name {
+                    "players": (+ players [player-key]),
+                    "players-bets": (+ players-bets [player-bet]),
+                    "moneyPool": (+ money-pool entry-fee)}
+                  )
+
+                ;insert that this user is an admin for this bracket
+
+                 (update users-table player-key {
+                   "bb-games": (+ games-list [bracket-name]),
+                   "balance": (- balance entry-fee)
+                 })
+            )
         )
-        ;insert that this user is an admin for this bracket
-         (with-read users-table player-key {
-           "bb-games":=games-list}
-             (update users-table player-key {
-               "bb-games": (+ games-list [bracket-name])
-             })
          )
     )
   )
@@ -302,6 +338,7 @@
   (defun finish-bracket-bb (admin-key:string bracket-name:string final-bracket:list winner:string)
      ;;called by admin or master
      ;;does all the table clean-up
+     ;;need to figure out which player is the winner...
      (with-capability (BRACKET-ADMIN-BB admin-key bracket-name)
        (enforce (check-bracket-validity final-bracket) "bracket format not valid")
        (update bracket-betting-table bracket-name {
@@ -314,10 +351,68 @@
     )
   )
 
-;  (defun pay-winner (winner-keyset:keyset)
-     ;;send money to winner keyset
-     ;;send small cut to master
-;  )
+  ;;may have to be done on the front-end...
+;   (defun find-winner-bb (admin-key:string bracket-name:string)
+;     (update bracket-betting-table bracket-name {
+;       "winner": "me" })
+;   )
+
+
+    (defun pay-winner-bb (admin-key:string bracket-name:string)
+        (with-capability (BRACKET-ADMIN-BB admin-key bracket-name)
+            (with-read bracket-betting-table bracket-name {
+                "winner":= winner-key,
+                "moneyPool":= money-pool,
+                "status":= status
+            }
+            (enforce (= status COMPLETE) "game is not complete yet")
+            (with-capability (BB-CONTRACT-CAN-TRANSFER bracket-name money-pool)
+                (with-read users-table winner-key {
+                  "balance":= current-balance-winner
+                }
+                  (with-read users-table admin-key {
+                  "balance":= current-balance-admin
+                  }
+                      (update users-table winner-key {
+                        "balance": (+ current-balance-winner (* money-pool 0.9))
+                      })
+                      (update users-table admin-key {
+                        "balance": (+ current-balance-admin (* money-pool 0.1))
+                      })
+                  )
+                )
+            )
+            )
+        )
+    )
+
+    (defun pay-winner-eb (admin-key:string bracket-name:string)
+        (with-capability (BRACKET-ADMIN-EB admin-key bracket-name)
+            (with-read empty-bracket-table bracket-name {
+                "winner":= winner-key,
+                "moneyPool":= money-pool,
+                "status":= status
+            }
+            (enforce (= status COMPLETE) "game is not complete yet")
+            (with-capability (EB-CONTRACT-CAN-TRANSFER bracket-name money-pool)
+                (with-read users-table winner-key {
+                  "balance":= current-balance-winner
+                }
+                  (with-read users-table admin-key {
+                  "balance":= current-balance-admin
+                  }
+                      (update users-table winner-key {
+                        "balance": (+ current-balance-winner (* money-pool 0.9))
+                      })
+                      (update users-table admin-key {
+                        "balance": (+ current-balance-admin (* money-pool 0.1))
+                      })
+                  )
+                )
+            )
+            )
+        )
+    )
 
   ;(defun return-money (admin-key:string bracket-name:string)
     ;return money to all participants
