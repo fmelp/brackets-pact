@@ -14,17 +14,17 @@ export class AuthStore extends React.Component {
       publicKey: localStorage.getItem('publicKey'),
       secretKey: localStorage.getItem('secretKey')
     },
-    //[username, bb-games, bb-admins, eb-games, eb-admins]
-    userData: ["", [], [], [], []],
+    //[username, bb-games, bb-admins, eb-games, eb-admins, balace, games-won]
+    userData: ["", [], [], [], [], "", []],
     allUsers: []
   }
 
   // if anything goes wrong comment above and uncomment below
   // state = {
-  //   keyset: {
-  //     publicKey: "8c213f005a559f63b8b6551bd1d24e0bfb21d463f902f5b5e9f393092e35c6d0",
-  //     secretKey: "5098d238eafe1229acfc6398d58bba22ec7da21e9242ecd6db0e7fb86a140abe"
-  //   },
+    // keyset: {
+    //   publicKey: "8c213f005a559f63b8b6551bd1d24e0bfb21d463f902f5b5e9f393092e35c6d0",
+    //   secretKey: "5098d238eafe1229acfc6398d58bba22ec7da21e9242ecd6db0e7fb86a140abe"
+    // },
   //   //[username, bb-games, bb-admins, eb-games, eb-admins]
   //   userData: ["", [], [], [], []],
   //   allUsers: []
@@ -49,7 +49,13 @@ export class AuthStore extends React.Component {
         // } else {
         //   this.setState({ userData: res.data });
         // }
-        this.setState({ userData: res.data });
+        console.log(res.data);
+        if (res.data) {
+          let data = res.data.slice();
+          data[5] = data[5]["int"];
+          this.setState({ userData: data });
+        }
+
       })
   }
 

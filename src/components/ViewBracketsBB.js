@@ -115,7 +115,7 @@ class ViewBracketsBB extends React.Component {
     return components;
   }
 
-  showAdminButtons = (keyset, bracketData) => {
+  showAdminButtons = (keyset, bracketData, payWinner, selectedBracketName) => {
     let components = []
     if (keyset.publicKey === bracketData[5]){
       components.push(<p>Current number of players signed up: {bracketData[0].length}</p>);
@@ -130,12 +130,17 @@ class ViewBracketsBB extends React.Component {
             onClick={() => {
               //add functionality to pay the winner
               //needs to be implemented at contract level first...
-              alert(`you just paid the winner`)
+              alert(`you just paid the winner`);
+              payWinner(keyset, selectedBracketName);
+              this.props.history.push('/');
             }}
           >
             Pay Winner
           </Button>
         );
+      }
+      if (bracketData[3] === 'winner-paid') {
+        components.push(<p>Tournament is over and winner is paid</p>);
       }
     }
     return components
@@ -160,7 +165,8 @@ class ViewBracketsBB extends React.Component {
           setUserSelectedBracket,
           userSelectedBracket,
           enterTournament,
-          selectedBracketName
+          selectedBracketName,
+          payWinner
         }) => {
           // getBracketNames(keyset);
           return (
@@ -201,7 +207,7 @@ class ViewBracketsBB extends React.Component {
 
               {this.showSignUp(keyset, bracketData, userSelectedBracket, enterTournament)}
               {this.showPlayerBracket(keyset, bracketData, setUserSelectedBracket, userSelectedBracket)}
-              {this.showAdminButtons(keyset, bracketData)}
+              {this.showAdminButtons(keyset, bracketData, payWinner, selectedBracketName)}
               <p>Real-Time Tournament Status:</p>
               {this.showRealTimeTournament(keyset, bracketData)}
 

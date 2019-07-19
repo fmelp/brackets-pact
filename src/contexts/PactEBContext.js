@@ -46,6 +46,7 @@ export class PactEBStore extends React.Component {
         let keyUsernameMap = {};
         //make last element a map of key => username for viewing simplicity
         data[5] = data[0].reduce((o, k, i) => ({...o, [k]: data[5][i]}), {});
+        data[3] = data[3]["int"];
         this.setState({ bracketData: data });
       })
   }
@@ -53,7 +54,7 @@ export class PactEBStore extends React.Component {
 // (admin-key:string bracket-name:string bracket:list number-players:integer entry-fee:decimal)
   initBracket = (keyset, bracketName, bracket, numberPlayers, entryFee) => {
     //make sure it has 2 decimal places
-    entryFee = entryFee.toFixed(2);
+    entryFee = Math.round(entryFee);
     console.log(`init-ing eb bracket ${bracketName} with ${numberPlayers} players`);
     console.log(`(brackets.init-empty-bracket ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(numberPlayers)} ${JSON.stringify(entryFee)})`)
     const cmdObj = {
@@ -100,6 +101,16 @@ export class PactEBStore extends React.Component {
     Pact.fetch.send(cmdObj, API_HOST);
   }
 
+  payWinner = (keyset, bracketName) => {
+    console.log('paying winner eb');
+    console.log(`(brackets.pay-winner-eb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)})`)
+    const cmd = {
+      pactCode: `(brackets.pay-winner-eb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)})`,
+      keyPairs: keyset
+    }
+    Pact.fetch.send(cmd, API_HOST);
+  }
+
 
   render() {
     return(
@@ -113,7 +124,8 @@ export class PactEBStore extends React.Component {
           enterTournament: this.enterTournament,
           advanceBracket: this.advanceBracket,
           finishBracket: this.finishBracket,
-          enterTournament: this.enterTournament
+          enterTournament: this.enterTournament,
+          payWinner: this.payWinner
         }}
       >
         {this.props.children}

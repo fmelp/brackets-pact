@@ -52,7 +52,8 @@
     bb-games:list
     bb-admins:list
     eb-games:list
-    eb-admins:list)
+    eb-admins:list
+    games-won:list)
 
   (deftable users-table:{users})
 
@@ -99,7 +100,8 @@
       "bb-games": [],
       "bb-admins": [],
       "eb-games": [],
-      "eb-admins": []
+      "eb-admins": [],
+      "games-won": []
     })
   )
 
@@ -111,8 +113,9 @@
           "bb-admins":=bb-admins,
           "eb-games":=eb-games,
           "eb-admins":=eb-admins,
-          "balance":= balance}
-          [username, bb-games, bb-admins, eb-games, eb-admins, balance]
+          "balance":= balance,
+          "games-won":= games-won}
+          [username, bb-games, bb-admins, eb-games, eb-admins, balance, games-won]
         )
     )
   )
@@ -214,7 +217,8 @@
     (keys empty-bracket-table)
   )
 
-  (defun enter-tournament-eb (bracket-name:string player-key:string player-index:integer)
+  (defun enter-tournament-eb
+    (bracket-name:string player-key:string player-index:integer)
     (with-capability (IS-REGISTERED-USER player-key)
                 ;insert that this user is an admin for this bracket
          (with-read users-table player-key {
@@ -368,13 +372,15 @@
             (enforce (= status COMPLETE) "game is not complete yet")
             (with-capability (BB-CONTRACT-CAN-TRANSFER bracket-name money-pool)
                 (with-read users-table winner-key {
-                  "balance":= current-balance-winner
+                  "balance":= current-balance-winner,
+                  "games-won":= games-won
                 }
                   (with-read users-table admin-key {
                   "balance":= current-balance-admin
                   }
                       (update users-table winner-key {
-                        "balance": (+ current-balance-winner (* money-pool 0.9))
+                        "balance": (+ current-balance-winner (* money-pool 0.9)),
+                        "games-won": (+ games-won [bracket-name])
                       })
                       (update users-table admin-key {
                         "balance": (+ current-balance-admin (* money-pool 0.1))
@@ -396,13 +402,15 @@
             (enforce (= status COMPLETE) "game is not complete yet")
             (with-capability (EB-CONTRACT-CAN-TRANSFER bracket-name money-pool)
                 (with-read users-table winner-key {
-                  "balance":= current-balance-winner
+                  "balance":= current-balance-winner,
+                  "games-won":= games-won
                 }
                   (with-read users-table admin-key {
                   "balance":= current-balance-admin
                   }
                       (update users-table winner-key {
-                        "balance": (+ current-balance-winner (* money-pool 0.9))
+                        "balance": (+ current-balance-winner (* money-pool 0.9)),
+                        "games-won": (+ games-won bracket-name)
                       })
                       (update users-table admin-key {
                         "balance": (+ current-balance-admin (* money-pool 0.1))

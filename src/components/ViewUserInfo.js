@@ -18,6 +18,7 @@ class ViewUserInfo extends React.Component {
             <div>
             <Grid container direction='column' alignItems='center'>
               <p>Your username is: {userData[0]}</p>
+              <p>Your balance is: {userData[5]}</p>
               <p>You are a player in the following bracket betting tournaments: </p>
               {userData[1].map((tournament) => <p>{tournament}</p>)}
               <p>You are an admin in the following bracket betting tournaments: </p>
@@ -26,6 +27,8 @@ class ViewUserInfo extends React.Component {
               {userData[3].map((tournament) => <p>{tournament}</p>)}
               <p>You are an admin in the following empty betting tournaments: </p>
               {userData[4].map((tournament) => <p>{tournament}</p>)}
+              <p>You won the following tournaments: </p>
+              {userData[6].map((tournament) => <p>{tournament}</p>)}
             </Grid>
             </div>
           );

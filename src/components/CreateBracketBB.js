@@ -70,7 +70,7 @@ class CreateBracketBB extends React.Component {
   showSubmitButton = (keyset) => {
     return (
       <PactBBContext.Consumer>
-        {({ initBracket }) => {
+        {({ initBracket, test }) => {
           return (
             <div>
               <UserIcon history={this.props.history}/>

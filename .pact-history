@@ -1,3 +1,20 @@
+(chain-data)
+(floor 12 1)
+(floor 12.1 1)
+(floor 12 1)
+)
+(insert xt "here" {"y":f}))
+(defun a (f:decimal)
+(deftable xt:{x})
+y:decimal)
+(defschema x
+(module b TRUE
+y:decimal)
+(defschema x
+(begin-tx)
+(str-to-int "12.1")
+(str-to-int "12")
+(str-to-int "12.3")
 (load "brackets.repl" true)
 (make-list 10 "hi")
 )

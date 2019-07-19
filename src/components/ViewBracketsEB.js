@@ -94,7 +94,7 @@ class ViewBracketsEB extends React.Component {
     return components
   }
 
-  showAdminButtons = (keyset, bracketData, bracketName, advanceBracket) => {
+  showAdminButtons = (keyset, bracketData, bracketName, advanceBracket, payWinner) => {
     //is admin and tournament not already initiated
     if (keyset.publicKey === bracketData[4]) {
       let components = [];
@@ -128,12 +128,17 @@ class ViewBracketsEB extends React.Component {
           onClick={() => {
             //add functionality to pay the winner
             //needs to be implemented at contract level first...
-            alert(`you just paid the winner`)
+            alert(`you just paid the winner`);
+            payWinner(keyset, bracketName);
+            this.props.history.push('/');
           }}
         >
           Pay Winner
         </Button>
       );
+    }
+    if (bracketData[3] === 'winner-paid') {
+      components.push(<p>Tournament is over and winner is paid</p>);
     }
     // else {
     //   components.push(<p>None Available at this stage</p>);
@@ -159,7 +164,8 @@ class ViewBracketsEB extends React.Component {
           setSelectedBracketName,
           selectedBracketName,
           enterTournament,
-          advanceBracket
+          advanceBracket,
+          payWinner
         }) => {
           return (
             <div>
@@ -199,7 +205,7 @@ class ViewBracketsEB extends React.Component {
               <p>Max number of Players: {bracketData[0].length}</p>
               {this.showCurrentPlayers(bracketData)}
               {this.showSignUp(enterTournament, bracketData, keyset, selectedBracketName)}
-              {this.showAdminButtons(keyset, bracketData, selectedBracketName, advanceBracket)}
+              {this.showAdminButtons(keyset, bracketData, selectedBracketName, advanceBracket, payWinner)}
               {this.isPlayerWinner(keyset, bracketData)}
 
             </Grid>

@@ -299,14 +299,15 @@
     )
   )
 
-  (defun finish-bracket-bb (admin-key:string bracket-name:string final-bracket:list)
+  (defun finish-bracket-bb (admin-key:string bracket-name:string final-bracket:list winner:string)
      ;;called by admin or master
      ;;does all the table clean-up
      (with-capability (BRACKET-ADMIN-BB admin-key bracket-name)
        (enforce (check-bracket-validity final-bracket) "bracket format not valid")
        (update bracket-betting-table bracket-name {
            "bracket": final-bracket,
-           "status": COMPLETE
+           "status": COMPLETE,
+           "winner": winner
        })
        ;function to figure out who the winners are...
      ;(pay-winner winner-keyset)

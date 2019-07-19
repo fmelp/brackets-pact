@@ -1,0 +1,97 @@
+(begin-tx)
+
+(load "coin.pact")
+(load "bracket-coin.pact")
+;need to figure out how to get this capability...
+;although the call will be to the contract itself and wont go through bracket-coin
+(test-capability (coin.COINBASE))
+(load "coin-faucet.pact")
+(env-data { "master-bracket-keyset" : ["master-bracket-keyset"], "admin":["admin-keys"], "p1": ["p1-keys"], "p2": ["p2-keys"], "p3": ["p3-keys"]})
+(env-keys ["master-bracket-keyset", "p1-keys", "p2-keys", "admin-keys", "p3-keys"])
+
+
+(commit-tx)
+
+
+;;testing eb
+(begin-tx)
+
+(use bracket-coin)
+
+(expect-failure "user not registered" (bracket-coin.init-empty-bracket "admin-key" "test-eb" [] 4 4))
+(bracket-coin.init-user "admin-key" "admin")
+(bracket-coin.init-empty-bracket "admin-key" "test-eb" [] 4 4)
+(expect "init wrote to db properly" [["unassigned", "unassigned", "unassigned", "unassigned"], [], "initiated", 4, "admin-key", ["unassigned", "unassigned", "unassigned", "unassigned"]] (bracket-coin.get-eb-info "test-eb"))
+(bracket-coin.init-user 'p1 "player_one")
+;;this funding of account will be done in a 'separate' website
+;;remember blocktime!!
+(env-chain-data {"block-time": 1557335000})
+(coin-faucet.request-coin 'p1 (read-keyset "p1") 12.0)
+(expect "account created and funded with 12 coins" 12.0 (coin.account-balance "p1"))
+;this account is created at the bottom with the tables in bracket-coin
+(expect "bracket contract account exists in coin" 0.0 (coin.account-balance "master-bracket-keyset"))
+(bracket-coin.enter-tournament-eb "test-eb" 'p1 0)
+;;verify entering tournament eb went well
+;returns the right obj
+(expect "p1 joined and paid 4.0" [["p1", "unassigned", "unassigned", "unassigned"], [], "initiated", 4, "admin-key", ["player_one", "unassigned", "unassigned", "unassigned"]] (bracket-coin.get-eb-info "test-eb"))
+;money is right in coins
+(expect "new p1 balance at 8.0" 8.0 (coin.account-balance 'p1))
+(expect "new contract account balance is 4.0" 4.0 (coin.account-balance "master-bracket-keyset"))
+
+;finish tournament and pay winner
+(finish-bracket-eb "admin-key" "test-eb" [] "p1")
+;pay winner
+(pay-winner-eb "admin-key" "test-eb")
+;user got the moneys
+(expect "user back to 12 coins" 12.0 (coin.account-balance "p1"))
+(expect "contract funds back to 0" 0.0 (coin.account-balance "master-bracket-keyset"))
+
+
+(commit-tx)
+
+
+;testing bb
+(begin-tx)
+(expect-failure "user not registered" (bracket-coin.init-empty-bracket "admin-key" "test-eb" [] 4 4))
+;already initing admin in test above
+;(bracket-coin.init-user "admin-key" "admin")
+;(admin-key:string bracket-name:string bracket:list entry-fee:integer)
+(bracket-coin.init-bracket-betting "admin-key" "test-bb" [] 4)
+
+(expect "init wrote to bb db properly" [[], [], [], "initiated", 4, "admin-key"] (bracket-coin.get-bb-info "test-bb"))
+(bracket-coin.init-user 'p2 "player_two")
+(bracket-coin.init-user 'p3 "player_three")
+;;this funding of account will be done in a 'separate' website
+;;remember blocktime!!
+(env-chain-data {"block-time": 1557335000})
+(coin-faucet.request-coin 'p2 (read-keyset "p2") 12.0)
+(coin-faucet.request-coin 'p3 (read-keyset "p3") 12.0)
+(expect "p2 account created and funded with 12 coins" 12.0 (coin.account-balance "p2"))
+(expect "p3 account created and funded with 12 coins" 12.0 (coin.account-balance "p3"))
+;this account is created at the bottom with the tables in bracket-coin
+(expect "bracket contract has the 4 coins from the test above" 0.0 (coin.account-balance "master-bracket-keyset"))
+
+(bracket-coin.enter-tournament-bb "test-bb" 'p2 [])
+
+;;verify entering tournament eb went well
+;returns the right obj
+(expect "p2 joined and paid 4.0" [["p2"], [], [[]], "initiated", 4, "admin-key"] (bracket-coin.get-bb-info "test-bb"))
+(bracket-coin.enter-tournament-bb "test-bb" 'p3 [])
+(expect "p3 joined and paid 4.0" [["p2", "p3"], [], [[], []], "initiated", 4, "admin-key"] (bracket-coin.get-bb-info "test-bb"))
+;(expect "p1 joined and paid 4.0" [["p1", "unassigned", "unassigned", "unassigned"], [], "initiated", 4, "admin-key", ["player_one", "unassigned", "unassigned", "unassigned"]] (bracket-coin.get-eb-info "test-eb"))
+;money is right in coins
+(expect "new p2 balance at 8.0" 8.0 (coin.account-balance 'p2))
+(expect "new p3 balance at 8.0" 8.0 (coin.account-balance 'p3))
+;4 from p2 + 4 from p3
+(expect "new contract account balance is 4.0" 8.0 (coin.account-balance "master-bracket-keyset"))
+
+;finish tournament
+(bracket-coin.finish-bracket-bb "admin-key" "test-bb" [] "p3")
+
+;pay winner
+(bracket-coin.pay-winner-bb "admin-key" "test-bb")
+;user got the moneys
+(expect "user made 4 and now has 16 coins" 16.0 (coin.account-balance "p3"))
+(expect "contract funds back to 0" 0.0 (coin.account-balance "master-bracket-keyset"))
+
+(commit-tx)
