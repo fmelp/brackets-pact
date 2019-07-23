@@ -26,6 +26,7 @@
 ;;this funding of account will be done in a 'separate' website
 ;;remember blocktime!!
 (env-chain-data {"block-time": 1557335000})
+;this also creates the account in coin if it doesnt exist... (with-default-read ) does this
 (coin-faucet.request-coin 'p1 (read-keyset "p1") 12.0)
 (expect "account created and funded with 12 coins" 12.0 (coin.account-balance "p1"))
 ;this account is created at the bottom with the tables in bracket-coin

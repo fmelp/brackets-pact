@@ -1,4 +1,5 @@
 (load "brackets.repl")
+(load "brackets.repl")
 (load "brackets.repl" true)
 (load "brackets.repl" true)
 (load "brackets.repl" true)

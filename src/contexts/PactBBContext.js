@@ -59,23 +59,25 @@ export class PactBBStore extends React.Component {
     entryFee = Math.round(entryFee);
     // console.log(entryFee);
     const cmdObj = {
-      pactCode: `(brackets.init-bracket-betting ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(entryFee)})`,
-      keyPairs: keyset
+      pactCode: `(brackets.init-bracket-betting ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(entryFee)})`,
+      keyPairs: keyset,
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
     }
     Pact.fetch.send(cmdObj, API_HOST);
   }
 
   enterTournament = (keyset, bracketName, playerBracket) => {
     console.log('entering bb bracket');
-    console.log(`(brackets.enter-tournament-bb ${JSON.stringify(bracketName)} ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(playerBracket)})`);
+    console.log(`(brackets.enter-tournament-bb ${JSON.stringify(bracketName)} ${JSON.stringify(playerBracket)})`);
     // console.log(`(brackets.enter-bracket-w-team ${JSON.stringify(bracketName)} ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(teamName)} ${JSON.stringify(teamIndex)}})`)
     //(enter-bracket-w-team "test" "player-key" "gators" 0)
     const cmd = {
       //pactCode: `(brackets.enter-bracket-w-team ${JSON.stringify(bracketName)} ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(teamName)} ${JSON.stringify(teamIndex)}})`,
       //pactCode: `(bracket.i-do-not-exist)`,
       //(defun enter-bracket-w-team (bracket-name:string player-key:string team-name:string team-index:integer)
-      pactCode: `(brackets.enter-tournament-bb ${JSON.stringify(bracketName)} ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(playerBracket)})`,
-      keyPairs: keyset
+      pactCode: `(brackets.enter-tournament-bb ${JSON.stringify(bracketName)} ${JSON.stringify(playerBracket)})`,
+      keyPairs: keyset,
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
     }
     Pact.fetch.send(cmd, API_HOST);
   }
@@ -84,8 +86,9 @@ export class PactBBStore extends React.Component {
     console.log('paying winner bb');
     console.log(`(brackets.pay-winner-bb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)})`)
     const cmd = {
-      pactCode: `(brackets.pay-winner-bb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)})`,
-      keyPairs: keyset
+      pactCode: `(brackets.pay-winner-bb ${JSON.stringify(bracketName)})`,
+      keyPairs: keyset,
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
     }
     Pact.fetch.send(cmd, API_HOST);
   }
@@ -97,8 +100,9 @@ export class PactBBStore extends React.Component {
     console.log('advancing bracket bb');
     console.log(`(brackets.advance-bracket-bb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)})`);
     const cmdObj = {
-      pactCode: `(brackets.advance-bracket-bb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)})`,
-      keyPairs: keyset
+      pactCode: `(brackets.advance-bracket-bb${JSON.stringify(bracketName)} ${JSON.stringify(bracket)})`,
+      keyPairs: keyset,
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
     }
     Pact.fetch.send(cmdObj, API_HOST);
   }
@@ -107,12 +111,13 @@ export class PactBBStore extends React.Component {
     console.log('finishing bracket bb');
     console.log(`(brackets.finish-bracket-bb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(winner)})`)
     const cmdObj = {
-      pactCode: `(brackets.finish-bracket-bb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(winner)})`,
-      keyPairs: keyset
+      pactCode: `(brackets.finish-bracket-bb ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(winner)})`,
+      keyPairs: keyset,
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
     }
     Pact.fetch.send(cmdObj, API_HOST);
   }
-  // 
+  //
   // test = (keyset) => {
   //   const cmdObj = {
   //     pactCode: `(brackets.test)`,

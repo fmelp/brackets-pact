@@ -21,10 +21,10 @@ export class AuthStore extends React.Component {
 
   // if anything goes wrong comment above and uncomment below
   // state = {
-    // keyset: {
-    //   publicKey: "8c213f005a559f63b8b6551bd1d24e0bfb21d463f902f5b5e9f393092e35c6d0",
-    //   secretKey: "5098d238eafe1229acfc6398d58bba22ec7da21e9242ecd6db0e7fb86a140abe"
-    // },
+  //   keyset: {
+  //     publicKey: "8c213f005a559f63b8b6551bd1d24e0bfb21d463f902f5b5e9f393092e35c6d0",
+  //     secretKey: "5098d238eafe1229acfc6398d58bba22ec7da21e9242ecd6db0e7fb86a140abe"
+  //   },
   //   //[username, bb-games, bb-admins, eb-games, eb-admins]
   //   userData: ["", [], [], [], []],
   //   allUsers: []

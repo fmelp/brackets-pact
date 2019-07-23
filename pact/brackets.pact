@@ -1,3 +1,345 @@
+
+(module coin GOVERNANCE
+
+  "'coin' represents the Kadena Coin Contract. This contract provides both the \
+  \buy/redeem gas support in the form of 'fund-tx', as well as transfer,       \
+  \credit, debit, coinbase, account creation and query, as well as SPV burn    \
+  \create. To access the coin contract, you may use its fully-qualified name,  \
+  \or issue the '(use coin)' command in the body of a module declaration."
+
+
+  ;(implements coin-sig)
+
+  ; --------------------------------------------------------------------------
+  ; Schemas and Tables
+
+  (defschema coin-schema
+    balance:decimal
+    guard:guard)
+  (deftable coin-table:{coin-schema})
+
+  ; the shape of a cross-chain transfer (used for typechecking)
+  (defschema transfer-schema
+    create-account:string
+    create-account-guard:guard
+    quantity:decimal
+    )
+
+  ; --------------------------------------------------------------------------
+  ; Capabilities
+
+  (defcap GOVERNANCE ()
+    "Enforce non-upgradeability except in the case of a hard fork"
+    false)
+
+  (defcap TRANSFER ()
+    "Autonomous capability to protect debit and credit actions"
+    true)
+
+  (defcap COINBASE ()
+    "Magic capability to protect miner reward"
+    true)
+
+  (defcap FUND_TX ()
+    "Magic capability to execute gas purchases and redemptions"
+    true)
+
+  (defcap ACCOUNT_GUARD (account)
+    "Lookup and enforce guards associated with an account"
+    (with-read coin-table account { "guard" := g }
+      (enforce-guard g)))
+
+  (defcap GOVERNANCE ()
+    (enforce false "Enforce non-upgradeability except in the case of a hard fork"))
+
+  ; --------------------------------------------------------------------------
+  ; Coin Contract
+
+  (defun buy-gas:string (sender:string total:decimal)
+    @doc "This function describes the main 'gas buy' operation. At this point \
+    \MINER has been chosen from the pool, and will be validated. The SENDER   \
+    \of this transaction has specified a gas limit LIMIT (maximum gas) for    \
+    \the transaction, and the price is the spot price of gas at that time.    \
+    \The gas buy will be executed prior to executing SENDER's code."
+
+    @model [(property (> total 0.0))]
+
+    (require-capability (FUND_TX))
+    (with-capability (TRANSFER)
+      (debit sender total))
+    )
+
+  (defun redeem-gas:string (miner:string miner-guard:guard sender:string total:decimal)
+    @doc "This function describes the main 'redeem gas' operation. At this    \
+    \point, the SENDER's transaction has been executed, and the gas that      \
+    \was charged has been calculated. MINER will be credited the gas cost,    \
+    \and SENDER will receive the remainder up to the limit"
+
+    @model [(property (> total 0.0))]
+
+    (require-capability (FUND_TX))
+    (with-capability (TRANSFER)
+      (let* ((fee (read-decimal "fee"))
+             (refund (- total fee)))
+        (enforce (>= refund 0.0) "fee must be less than or equal to total")
+
+
+        ; directly update instead of credit
+        (if (> refund 0.0)
+          (with-read coin-table sender
+            { "balance" := balance }
+            (update coin-table sender
+              { "balance": (+ balance refund) })
+            )
+          "noop")
+        (credit miner miner-guard fee)
+        ))
+    )
+
+  (defun create-account:string (account:string guard:guard)
+    (insert coin-table account
+      { "balance" : 0.0
+      , "guard"   : guard
+      })
+    )
+
+  (defun account-balance:decimal (account:string)
+    (with-read coin-table account
+      { "balance" := balance }
+      balance
+      )
+    )
+
+  (defun transfer:string (sender:string receiver:string receiver-guard:guard amount:decimal)
+
+    (enforce (not (= sender receiver))
+      "sender cannot be the receiver of a transfer")
+
+    (with-capability (TRANSFER)
+      (debit sender amount)
+      (credit receiver receiver-guard amount))
+    )
+
+  (defun coinbase:string (address:string address-guard:guard amount:decimal)
+    ;(require-capability (COINBASE))
+    (with-capability (TRANSFER)
+     (credit address address-guard amount))
+    )
+
+  (defpact fund-tx (sender miner miner-guard total)
+    @doc "'fund-tx' is a special pact to fund a transaction in two steps,     \
+    \with the actual transaction transpiring in the middle:                   \
+    \                                                                         \
+    \  1) A buying phase, debiting the sender for total gas and fee, yielding \
+    \     TX_MAX_CHARGE.                                                      \
+    \  2) A settlement phase, resuming TX_MAX_CHARGE, and allocating to the   \
+    \     coinbase account for used gas and fee, and sender account for bal-  \
+    \     ance (unused gas, if any)."
+
+    (step (buy-gas sender total))
+    (step (redeem-gas miner miner-guard sender total))
+    )
+
+  (defun debit:string (account:string amount:decimal)
+    @doc "Debit AMOUNT from ACCOUNT balance recording DATE and DATA"
+
+    @model [ (property (> amount 0.0)) ]
+
+    (enforce (> amount 0.0)
+      "debit amount must be positive")
+
+    (require-capability (TRANSFER))
+    (with-capability (ACCOUNT_GUARD account)
+      (with-read coin-table account
+        { "balance" := balance }
+
+        (enforce (<= amount balance) "Insufficient funds")
+        (update coin-table account
+          { "balance" : (- balance amount) }
+          )))
+    )
+
+
+  (defun credit:string (account:string guard:guard amount:decimal)
+    @doc "Credit AMOUNT to ACCOUNT balance recording DATE and DATA"
+
+    @model [ (property (> amount 0.0))
+             (property (not (= account "")))
+           ]
+
+    (enforce (> amount 0.0)
+      "debit amount must be positive")
+
+    (require-capability (TRANSFER))
+    (with-default-read coin-table account
+      { "balance" : 0.0, "guard" : guard }
+      { "balance" := balance, "guard" := retg }
+      ; we don't want to overwrite an existing guard with the user-supplied one
+      (enforce (= retg guard)
+        "account guards do not match")
+
+      (write coin-table account
+        { "balance" : (+ balance amount)
+        , "guard"   : retg
+        })
+      ))
+
+  (defpact cross-chain-transfer
+    ( delete-account:string
+      create-chain-id:string
+      create-account:string
+      create-account-guard:guard
+      quantity:decimal )
+
+    @doc "Transfer QUANTITY coins from DELETE-ACCOUNT on current chain to           \
+         \CREATE-ACCOUNT on CREATE-CHAIN-ID. Target chain id must not be the        \
+         \current chain-id.                                                         \
+         \                                                                          \
+         \Step 1: Burn QUANTITY-many coins for DELETE-ACCOUNT on the current chain, \
+         \and produce an SPV receipt which may be manually redeemed for an SPV      \
+         \proof. Once a proof is obtained, the user may call 'create-coin' and      \
+         \consume the proof on CREATE-CHAIN-ID, crediting CREATE-ACCOUNT QUANTITY-  \
+         \many coins.                                                               \
+         \                                                                          \
+         \Step 2: Consume an SPV proof for a number of coins, and credit the        \
+         \account associated with the proof the quantify of coins burned on the     \
+         \source chain by the burn account. Note: must be called on the correct     \
+         \chain id as specified in the proof."
+
+    @model [ (property (> quantity 0.0))
+           , (property (not (= create-chain-id "")))
+           ]
+
+    (step
+      (with-capability (TRANSFER)
+        (enforce (not (= (at 'chain-id (chain-data)) create-chain-id))
+          "cannot run cross-chain transfers to the same chain")
+
+        (debit delete-account quantity)
+        (let
+          ((retv:object{transfer-schema}
+            { "create-account": create-account
+            , "create-account-guard": create-account-guard
+            , "quantity": quantity
+            }))
+          (yield retv create-chain-id)
+          )))
+
+    (step
+      (resume
+        { "create-account" := create-account
+        , "create-account-guard" := create-account-guard
+        , "quantity" := quantity
+        }
+
+        (with-capability (TRANSFER)
+          (credit create-account create-account-guard quantity))
+        ))
+    )
+)
+
+(create-table coin-table)
+
+
+
+(module coin-faucet FAUCET-GOVERNANCE
+
+  "'coin-faucet' represents Kadena's Coin Faucet Contract."
+
+  ;;Governance is TBD
+  (defcap FAUCET-GOVERNANCE () true)
+
+  ;; TODO - use hashed import
+  (use coin)
+
+  ; --------------------------------------------------------------------------
+  ; Schemas and Tables
+  ; --------------------------------------------------------------------------
+
+  (defschema history
+    @doc "Table to record the behavior of addresses. Last transaction time,       \
+    \ total coins earned, and total coins returned are inserted or updated at     \
+    \ transaction. "
+    last-tx-time:time
+    total-coins-earned:decimal
+    total-coins-returned:decimal
+    )
+
+  (deftable history-table: {history})
+
+  ; --------------------------------------------------------------------------
+  ; Constants
+  ; --------------------------------------------------------------------------
+
+  (defconst FAUCET_ACCOUNT:string 'faucet-account)
+  (defconst MAX_COIN_PER_REQUEST:decimal 20.0)
+  (defconst WAIT_TIME_PER_REQUEST:decimal 3600.0)
+  (defconst EPOCH:time  (time "1970-01-01T00:00:00Z"))
+
+  ; --------------------------------------------------------------------------
+  ; Coin Faucet Contract
+  ; --------------------------------------------------------------------------
+;(transfer address FAUCET_ACCOUNT (faucet-guard) amount)
+  (defun faucet-guard:guard () (create-module-guard 'faucet-admin))
+
+  ;(defun request-coin:string (address:string address-guard:guard amount:decimal)
+  (defun request-coin:string (address:string amount-int:integer)
+    @doc "Transfers AMOUNT of coins up to MAX_COIN_PER_REQUEST from the faucet    \
+    \ account to the requester account at ADDRESS. Inserts or updates the         \
+    \ transaction of the account at ADDRESS in history-table. Limits the number   \
+    \ of coin requests by time, WAIT_TIME_PER_REQUEST "
+    @model [(property (<= amount 20.0))]
+    (let* ((address-guard (read-keyset (at "sender" (chain-data))))
+          (amount (* 1.0 amount-int)))
+    (enforce (<= amount MAX_COIN_PER_REQUEST)
+      "Has reached maximum coin amount per request")
+
+    (with-default-read history-table address {
+      "last-tx-time": EPOCH,
+      "total-coins-earned": 0.0,
+      "total-coins-returned": 0.0 }
+      {
+      "last-tx-time":= last-tx-time,
+      "total-coins-earned":= total-coins-earned,
+      "total-coins-returned":= total-coins-returned }
+
+      ;get rid of time constraint for now
+      ;(enforce (> (diff-time (curr-time) last-tx-time) WAIT_TIME_PER_REQUEST)
+        ;"Has reached maximum requests per wait time")
+
+      (transfer FAUCET_ACCOUNT address address-guard amount)
+      (write history-table address {
+        "last-tx-time": (curr-time),
+        "total-coins-earned": (+ amount total-coins-earned),
+        "total-coins-returned": total-coins-returned }))))
+
+  (defun return-coin:string (address:string amount:decimal)
+    @doc "Returns the AMOUNT of coin from account at ADDRESS back to the faucet   \
+    \ account after use. Updates the transaction of the account at ADDRESS in     \
+    \ history-table keep track of behavior. "
+    @model [(property (> amount 0.0))]
+
+    (with-read history-table address
+      {"total-coins-returned":= coins-returned}
+      (transfer address FAUCET_ACCOUNT (faucet-guard) amount)
+      (update history-table address
+        {"total-coins-returned": (+ amount coins-returned)})))
+
+  (defun read-history:object{history} (address:string)
+    @doc "Returns history of the account at ADDRESS"
+    (read history-table address))
+
+  (defun curr-time:time ()
+    @doc "Returns current chain's block-time in time type"
+    (add-time EPOCH (at 'block-time (chain-data)))
+  )
+)
+
+(create-table history-table)
+;;this is what creates the account...
+(coin.coinbase FAUCET_ACCOUNT (faucet-guard) 100000000000000.0)
+
+
 (module brackets BRACKETS-GOVERNANCE
 
   (defun enforce-brackets-admin ()
@@ -7,6 +349,8 @@
   (defcap BRACKETS-GOVERNANCE ()
     (enforce-brackets-admin)
   )
+
+  ;(use coin)
 
    ;game initiated, people still signing up
    (defconst INITIATED:string "initiated")
@@ -128,8 +472,9 @@
   )
 
   (defun init-empty-bracket
-    (admin-key:string bracket-name:string bracket:list number-players:integer entry-fee:integer)
+    (bracket-name:string bracket:list number-players:integer entry-fee:integer)
     "initiate a new bracket"
+    (let ((admin-key (at "sender" (chain-data))))
     ;is already a user of our systems
     (with-capability (IS-REGISTERED-USER admin-key)
       (enforce (check-bracket-validity bracket) "bracket format not valid")
@@ -153,13 +498,15 @@
            })
        )
      )
+     )
   )
 
 
   (defun init-bracket-betting
-    (admin-key:string bracket-name:string bracket:list entry-fee:integer)
+    (bracket-name:string bracket:list entry-fee:integer)
     "initiate a new bracket"
     ;is already a user of our systems
+    (let ((admin-key (at "sender" (chain-data))))
     (with-capability (IS-REGISTERED-USER admin-key)
         (enforce (check-bracket-validity bracket) "bracket format not valid")
         ; anyone can init a new bracket.
@@ -181,6 +528,7 @@
                "bb-admins": (+ admin-lists [bracket-name])
              })
          )
+    )
     )
   )
 
@@ -221,7 +569,8 @@
   )
 
   (defun enter-tournament-eb
-    (bracket-name:string player-key:string player-index:integer)
+    (bracket-name:string player-index:integer)
+    (let ((player-key (at "sender" (chain-data))))
     (with-capability (IS-REGISTERED-USER player-key)
                 ;insert that this user is an admin for this bracket
          (with-read users-table player-key {
@@ -256,6 +605,7 @@
             )
          )
     )
+    )
   )
 
   (defun test ()
@@ -265,7 +615,8 @@
   )
 
 
-  (defun enter-tournament-bb (bracket-name:string player-key:string player-bet:list)
+  (defun enter-tournament-bb (bracket-name:string player-bet:list)
+    (let ((player-key (at "sender" (chain-data))))
     (with-capability (IS-REGISTERED-USER player-key)
         (with-read users-table player-key {
            "bb-games":=games-list,
@@ -297,13 +648,15 @@
         )
          )
     )
+    )
   )
 
 
   ;when we make the draw, we pass the draw bracket as bracket param
-  (defun advance-bracket-eb (admin-key:string bracket-name:string bracket:list)
+  (defun advance-bracket-eb (bracket-name:string bracket:list)
      ;;check the bracket list validity on the front
      ;maybe some minimal checking here too
+     (let ((admin-key (at "sender" (chain-data))))
      (with-capability (BRACKET-ADMIN-EB admin-key bracket-name)
        (enforce (check-bracket-validity bracket) "bracket format not valid")
        ;;can only be called by admin of that bracket
@@ -312,11 +665,13 @@
            "status": IN_PROGRESS
        })
     )
+    )
   )
 
-  (defun advance-bracket-bb (admin-key:string bracket-name:string bracket:list)
+  (defun advance-bracket-bb (bracket-name:string bracket:list)
      ;;check the bracket list validity on the front
      ;maybe some minimal checking here too
+     (let ((admin-key (at "sender" (chain-data))))
      (with-capability (BRACKET-ADMIN-BB admin-key bracket-name)
        (enforce (check-bracket-validity bracket) "bracket format not valid")
        ;;can only be called by admin of that bracket
@@ -324,6 +679,7 @@
            "bracket": bracket,
            "status": IN_PROGRESS
        })
+    )
     )
   )
 
@@ -334,9 +690,10 @@
     true
   )
 
-  (defun finish-bracket-eb (admin-key:string bracket-name:string final-bracket:list winner:string)
+  (defun finish-bracket-eb (bracket-name:string final-bracket:list winner:string)
      ;;called by admin or master
      ;;does all the table clean-up
+     (let ((admin-key (at "sender" (chain-data))))
      (with-capability (BRACKET-ADMIN-EB admin-key bracket-name)
        (enforce (check-bracket-validity final-bracket) "bracket format not valid")
        (update empty-bracket-table bracket-name {
@@ -346,12 +703,14 @@
        })
      ;(pay-winner winner-keyset)
     )
+    )
   )
 
-  (defun finish-bracket-bb (admin-key:string bracket-name:string final-bracket:list winner:string)
+  (defun finish-bracket-bb (bracket-name:string final-bracket:list winner:string)
      ;;called by admin or master
      ;;does all the table clean-up
      ;;need to figure out which player is the winner...
+     (let ((admin-key (at "sender" (chain-data))))
      (with-capability (BRACKET-ADMIN-BB admin-key bracket-name)
        (enforce (check-bracket-validity final-bracket) "bracket format not valid")
        (update bracket-betting-table bracket-name {
@@ -362,6 +721,7 @@
        ;function to figure out who the winners are...
      ;(pay-winner winner-keyset)
     )
+    )
   )
 
   ;;may have to be done on the front-end...
@@ -371,7 +731,8 @@
 ;   )
 
 
-    (defun pay-winner-bb (admin-key:string bracket-name:string)
+    (defun pay-winner-bb (bracket-name:string)
+      (let ((admin-key (at "sender" (chain-data))))
         (with-capability (BRACKET-ADMIN-BB admin-key bracket-name)
             (with-read bracket-betting-table bracket-name {
                 "winner":= winner-key,
@@ -397,9 +758,11 @@
             )
             )
         )
+      )
     )
 
-    (defun pay-winner-eb (admin-key:string bracket-name:string)
+    (defun pay-winner-eb (bracket-name:string)
+      (let ((admin-key (at "sender" (chain-data))))
         (with-capability (BRACKET-ADMIN-EB admin-key bracket-name)
             (with-read empty-bracket-table bracket-name {
                 "winner":= winner-key,
@@ -424,6 +787,7 @@
                 )
             )
             )
+        )
         )
     )
 

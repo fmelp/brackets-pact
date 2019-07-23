@@ -56,25 +56,27 @@ export class PactEBStore extends React.Component {
     //make sure it has 2 decimal places
     entryFee = Math.round(entryFee);
     console.log(`init-ing eb bracket ${bracketName} with ${numberPlayers} players`);
-    console.log(`(brackets.init-empty-bracket ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(numberPlayers)} ${JSON.stringify(entryFee)})`)
+    console.log(`(brackets.init-empty-bracket ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(numberPlayers)} ${JSON.stringify(entryFee)})`)
     const cmdObj = {
-      pactCode: `(brackets.init-empty-bracket ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(numberPlayers)} ${JSON.stringify(entryFee)})`,
-      keyPairs: keyset
+      pactCode: `(brackets.init-empty-bracket ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(numberPlayers)} ${JSON.stringify(entryFee)})`,
+      keyPairs: keyset,
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
     }
     Pact.fetch.send(cmdObj, API_HOST);
   }
 
   enterTournament = (keyset, bracketName, playerIndex) => {
     console.log('entering eb bracket');
-    console.log(`(brackets.enter-tournament-eb ${JSON.stringify(bracketName)} ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(playerIndex)})`)
+    console.log(`(brackets.enter-tournament-eb ${JSON.stringify(bracketName)} ${JSON.stringify(playerIndex)})`)
     // console.log(`(brackets.enter-bracket-w-team ${JSON.stringify(bracketName)} ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(teamName)} ${JSON.stringify(teamIndex)}})`)
     //(enter-bracket-w-team "test" "player-key" "gators" 0)
     const cmd = {
       //pactCode: `(brackets.enter-bracket-w-team ${JSON.stringify(bracketName)} ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(teamName)} ${JSON.stringify(teamIndex)}})`,
       //pactCode: `(bracket.i-do-not-exist)`,
       //(defun enter-bracket-w-team (bracket-name:string player-key:string team-name:string team-index:integer)
-      pactCode: `(brackets.enter-tournament-eb ${JSON.stringify(bracketName)} ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(playerIndex)})`,
-      keyPairs: keyset
+      pactCode: `(brackets.enter-tournament-eb ${JSON.stringify(bracketName)} ${JSON.stringify(playerIndex)})`,
+      keyPairs: keyset,
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
     }
     Pact.fetch.send(cmd, API_HOST);
   }
@@ -86,8 +88,9 @@ export class PactEBStore extends React.Component {
     console.log('advancing bracket eb');
     console.log(keyset);
     const cmdObj = {
-      pactCode: `(brackets.advance-bracket-eb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)})`,
-      keyPairs: keyset
+      pactCode: `(brackets.advance-bracket-eb ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)})`,
+      keyPairs: keyset,
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
     }
     Pact.fetch.send(cmdObj, API_HOST);
   }
@@ -95,8 +98,9 @@ export class PactEBStore extends React.Component {
   finishBracket = (keyset, bracketName, winner, bracket) => {
     console.log('finishing bracket eb');
     const cmdObj = {
-      pactCode: `(brackets.finish-bracket-eb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(winner)})`,
-      keyPairs: keyset
+      pactCode: `(brackets.finish-bracket-eb ${JSON.stringify(bracketName)} ${JSON.stringify(bracket)} ${JSON.stringify(winner)})`,
+      keyPairs: keyset,
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
     }
     Pact.fetch.send(cmdObj, API_HOST);
   }
@@ -105,8 +109,9 @@ export class PactEBStore extends React.Component {
     console.log('paying winner eb');
     console.log(`(brackets.pay-winner-eb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)})`)
     const cmd = {
-      pactCode: `(brackets.pay-winner-eb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)})`,
-      keyPairs: keyset
+      pactCode: `(brackets.pay-winner-eb ${JSON.stringify(bracketName)})`,
+      keyPairs: keyset,
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
     }
     Pact.fetch.send(cmd, API_HOST);
   }

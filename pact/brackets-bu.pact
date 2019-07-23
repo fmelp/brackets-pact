@@ -1,4 +1,4 @@
-(module bracket-coin BRACKETS-GOVERNANCE
+(module brackets BRACKETS-GOVERNANCE
 
   (defun enforce-brackets-admin ()
     (enforce-guard (read-keyset "master-bracket-keyset"))
@@ -7,11 +7,6 @@
   (defcap BRACKETS-GOVERNANCE ()
     (enforce-brackets-admin)
   )
-
-  (use coin)
-
-  (defconst CONTRACT_ACCOUNT:string 'master-bracket-keyset)
-  (defun contract-guard:guard () (create-module-guard 'master-bracket-keyset))
 
    ;game initiated, people still signing up
    (defconst INITIATED:string "initiated")
@@ -99,7 +94,6 @@
         (enforce (contains user-key users) "you are not a registered user")
     )
   )
-
 
   (defun init-user (user-key:string username:string)
     (insert users-table user-key {
@@ -259,7 +253,6 @@
                     "moneyPool": (+ money-pool entry-fee)
                   })
             )
-            (coin.transfer player-key CONTRACT_ACCOUNT (contract-guard) (* entry-fee 1.0))
             )
          )
     )
@@ -301,7 +294,6 @@
                    "balance": (- balance entry-fee)
                  })
             )
-            (coin.transfer player-key CONTRACT_ACCOUNT (contract-guard) (* entry-fee 1.0))
         )
          )
     )
@@ -403,7 +395,6 @@
                   )
                 )
             )
-            (coin.transfer CONTRACT_ACCOUNT winner-key (read-keyset winner-key) (* money-pool 1.0))
             )
         )
     )
@@ -432,7 +423,6 @@
                   )
                 )
             )
-            (coin.transfer CONTRACT_ACCOUNT winner-key (read-keyset winner-key) (* money-pool 1.0))
             )
         )
     )
@@ -460,5 +450,3 @@
 (create-table users-table)
 (create-table bracket-betting-table)
 (create-table empty-bracket-table)
-;this call is essential and inits the contract in the coin table
-(coin.create-account CONTRACT_ACCOUNT (contract-guard))
