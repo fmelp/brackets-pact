@@ -16,7 +16,8 @@ export class AuthStore extends React.Component {
     },
     //[username, bb-games, bb-admins, eb-games, eb-admins, balace, games-won]
     userData: ["", [], [], [], [], "", []],
-    allUsers: []
+    allUsers: [],
+    coinAccountBalance: 0
   }
 
   // if anything goes wrong comment above and uncomment below
@@ -33,6 +34,7 @@ export class AuthStore extends React.Component {
   componentDidMount() {
     this.getUserInfo(this.state.keyset);
     this.getAllUsers(this.state.keyset);
+    this.getCoinAccountBalance(this.state.keyset);
     console.log(this.state.userData);
   }
 
@@ -83,6 +85,34 @@ export class AuthStore extends React.Component {
     Pact.fetch.send(cmdObj, API_HOST);
   }
 
+  getCoinAccountBalance = (keyset) => {
+    console.log('checking if user has a coin account')
+    const cmdObj = {
+      pactCode: `(coin.account-balance ${JSON.stringify(keyset.publicKey)})`,
+      keyPairs: keyset
+    }
+    Pact.fetch.local(cmdObj, API_HOST)
+      .then(res => {
+        console.log(res.data);
+        this.setState({ coinAccountBalance: res.data });
+      })
+  }
+
+  getBalance = (keyset) => {
+    let balance = 0;
+    console.log('checking if user has a coin account')
+    const cmdObj = {
+      pactCode: `(coin.account-balance ${JSON.stringify(keyset.publicKey)})`,
+      keyPairs: keyset
+    }
+    Pact.fetch.local(cmdObj, API_HOST)
+      .then(res => {
+        console.log(res.data);
+        this.setState({ coinAccountBalance: res.data });
+      })
+    return balance;
+  }
+
   //can call this function from any component wrapped by this context
   //it will be very useful when actual users need to input their keyset
   onKeysetChange = (publicKey, secretKey) => {
@@ -111,7 +141,9 @@ export class AuthStore extends React.Component {
           onKeysetChange: this.onKeysetChange,
           setUserName: this.setUserName,
           getUserInfo: this.getUserInfo,
-          getAllUsers: this.getAllUsers
+          getAllUsers: this.getAllUsers,
+          getCoinAccountBalance: this.getCoinAccountBalance,
+          getBalance: this.getBalance
         }}
       >
         {this.props.children}

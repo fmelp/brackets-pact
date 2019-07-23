@@ -5,81 +5,147 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Pact from "pact-lang-api";
 
+
 class LoginSignUp extends React.Component {
 
   state = {
-    publicKeyGen: "",
-    secretKeyGen: "",
-    publicKey: "",
-    secretKey: "",
-    showSignUp: false,
-    userName: ""
+     publicKey: "",
+     secretKey: "",
+     userName: "",
+     screen: "login"
   }
 
-  // enableLoginButton = (publicKey, allUsers) => {
-  //   if (allUsers.includes(publicKey)) {
-  //     this.setState({ loginButtonDisabled: false });
-  //   }
-  // }
-
-  generateKeyPair = () => {
-    const keyPairObj = Pact.crypto.genKeyPair();
-    this.setState({
-      publicKeyGen: keyPairObj.publicKey,
-      secretKeyGen: keyPairObj.secretKey
-    })
-  }
-
-  showSignUp = (setUserName, onKeysetChange, keyset, getUserInfo, getAllUsers, allUsers) => {
-    if (this.state.showSignUp) {
+  showTextInputs = (keyset,
+  onKeysetChange,
+  setUserName,
+  getUserInfo,
+  getAllUsers,
+  allUsers,
+  getCoinAccountBalance,
+  coinAccountBalance) => {
+    if (this.state.screen === "login") {
       return (
         <div>
-        <Grid container direction='column' style={{margin: 20}} alignItems='center'>
-          <TextField
-            id="standard-name"
-            placeholder="public key"
-            label={`public key`}
-            onChange={async (e) => {
-              await this.setState({ publicKey: e.target.value });
-              onKeysetChange(this.state.publicKey, this.state.secretKey)
-              // getAllUsers(this.state.publicKey);
-              // this.enableLoginButton(this.state.publicKey, allUsers);
-            }}
-            margin="normal"
-          />
-          <TextField
-            id="standard-name"
-            placeholder="private key"
-            label={`private key`}
-            onChange={async (e) => {
-              await this.setState({ secretKey: e.target.value });
-              onKeysetChange(this.state.publicKey, this.state.secretKey)
-            }}
-            margin="normal"
-          />
-          <TextField
-            id="standard-name"
-            placeholder="username"
-            label={`username`}
-            onChange={async (e) => {
-              console.log(e.target.value);
-              await this.setState({ userName: e.target.value });
-              await onKeysetChange(this.state.publicKey, this.state.secretKey)
-            }}
-            margin="normal"
-          />
-          <Button variant="contained"
-            color="primary"
-            style={{ marginBottom: 10, marginTop: 10 }}
-            onClick={() => {
-              console.log(keyset, this.state.userName);
-              setUserName(keyset, this.state.userName);
-              getUserInfo(keyset)
+        <Grid container direction='column' style={{margin: 20}}>
+        <p>To login please paste your public and private keys below</p>
+        <TextField
+          id="standard-name"
+          placeholder="public key"
+          label={`public key`}
+          onChange={async (e) => {
+            await this.setState({ publicKey: e.target.value });
+            onKeysetChange(this.state.publicKey, this.state.secretKey)
+          }}
+          margin="normal"
+        />
+        <TextField
+          id="standard-name"
+          placeholder="private key"
+          label={`private key`}
+          onChange={async (e) => {
+            await this.setState({ secretKey: e.target.value });
+            onKeysetChange(this.state.publicKey, this.state.secretKey)
+          }}
+          type="password"
+          margin="normal"
+        />
+        <Button variant="contained"
+          disabled={this.state.loginButtonDisabled}
+          color="primary"
+          style={{ marginBottom: 10, marginTop: 10 }}
+          onClick={async () => {
+            console.log(this.state.publicKey, this.state.secretKey)
+            onKeysetChange(this.state.publicKey, this.state.secretKey);
+            console.log(allUsers);
+            await getAllUsers(keyset);
+            console.log(allUsers);
+            //if user has no account for coin
+            //  point them to testnet faucet
+            //if user has account for coin, but is not a bracket user
+            //  show username textfield and signup button
+            //this is the no username logic
+            // await getCoinAccountBalance(keyset)
+            if (!allUsers || !allUsers.includes(this.state.publicKey)) {
+              alert('You are not a registered user! Choose signup section');
+            } else {
+              getUserInfo(keyset);
               this.props.history.push('/')
-            }}
-          >
-            Sign-Up
-          </Button>
+            }
+
+          }}
+        >
+          Login
+        </Button>
+        </Grid>
+        </div>
+      );
+    } else {
+      return (
+        <div>
+        <Grid container direction='column' style={{margin: 20}}>
+        <p>To sign-up please paste your public and private keys and enter a username below</p>
+        <p>If you do not even have a Kadena account, please visit our <a href="http://localhost:8000/">testnet faucet</a></p>
+        <TextField
+          id="standard-name"
+          placeholder="public key"
+          label={`public key`}
+          onChange={async (e) => {
+            await this.setState({ publicKey: e.target.value });
+            await onKeysetChange(this.state.publicKey, this.state.secretKey)
+          }}
+          margin="normal"
+        />
+        <TextField
+          id="standard-name"
+          placeholder="private key"
+          label={`private key`}
+          onChange={async (e) => {
+            await this.setState({ secretKey: e.target.value });
+            await onKeysetChange(this.state.publicKey, this.state.secretKey)
+          }}
+          type="password"
+          margin="normal"
+        />
+        <TextField
+          id="standard-name"
+          placeholder="username"
+          label={`username`}
+          onChange={async (e) => {
+            console.log(e.target.value);
+            await this.setState({ userName: e.target.value });
+            await onKeysetChange(this.state.publicKey, this.state.secretKey)
+          }}
+          margin="normal"
+        />
+        <Button variant="contained"
+          disabled={this.state.loginButtonDisabled}
+          color="primary"
+          style={{ marginBottom: 10, marginTop: 10 }}
+          onClick={async () => {
+            console.log(keyset, this.state.userName);
+
+            // await getCoinAccountBalance(keyset);
+            // await getCoinAccountBalance(keyset);
+            console.log(coinAccountBalance);
+            await onKeysetChange(this.state.publicKey, this.state.secretKey)
+            if (this.state.userName === ""){
+              alert("please enter a username")
+            }
+            //not dealing with having non-funded accounts atm
+            // else if (coinAccountBalance === 0) {
+            //   alert("please go to the testnet faucet website to fund your account")
+            // }
+            else {
+              setUserName(keyset, this.state.userName);
+              getUserInfo(keyset);
+              getUserInfo(keyset);
+              this.props.history.push('/')
+            }
+
+          }}
+        >
+          Sign-Up
+        </Button>
         </Grid>
         </div>
       );
@@ -88,7 +154,6 @@ class LoginSignUp extends React.Component {
 
   render() {
     return (
-      <div>
         <AuthContext.Consumer>
           {({
             keyset,
@@ -96,77 +161,54 @@ class LoginSignUp extends React.Component {
             setUserName,
             getUserInfo,
             getAllUsers,
-            allUsers
+            allUsers,
+            getCoinAccountBalance,
+            coinAccountBalance
           }) =>
           <Grid container direction='column' style={{margin: 20}} alignItems='center'>
-            <p>If you ALREADY HAVE a keyset, enter it below</p>
-            <p>Then press Login</p>
-            <TextField
-              id="standard-name"
-              placeholder="public key"
-              label={`public key`}
-              onChange={async (e) => {
-                await this.setState({ publicKey: e.target.value });
-                onKeysetChange(this.state.publicKey, this.state.secretKey)
-              }}
-              margin="normal"
-            />
-            <TextField
-              id="standard-name"
-              placeholder="private key"
-              label={`private key`}
-              onChange={async (e) => {
-                await this.setState({ secretKey: e.target.value });
-                onKeysetChange(this.state.publicKey, this.state.secretKey)
-              }}
-              margin="normal"
-            />
-            <Button variant="contained"
-              disabled={this.state.loginButtonDisabled}
-              color="primary"
-              style={{ marginBottom: 10, marginTop: 10 }}
-              onClick={async () => {
-                console.log(this.state.publicKey, this.state.secretKey)
-                onKeysetChange(this.state.publicKey, this.state.secretKey);
-                console.log(allUsers);
-                await getAllUsers(keyset);
-                console.log(allUsers);
-                if (!allUsers || !allUsers.includes(this.state.publicKey)) {
-                  alert('You are not a registered user! Please generate an account below');
-                } else {
-                  getUserInfo(keyset);
-                  this.props.history.push('/')
-                }
+            <div>
+            <Grid container direction='row' style={{margin: 20}} alignItems='center'>
+              <Button
+                disabled={(this.state.screen === "login") ? true : false}
+                variant="contained"
+                color="primary"
+                style={{ marginBottom: 10, marginTop: 10 }}
+                onClick={() => {
+                  this.setState({ screen: "login" })
+                }}
+              >
+                Login
+              </Button>
+              <Button
+                disabled={(this.state.screen === "signup") ? true : false}
+                variant="contained"
+                color="primary"
+                style={{ marginBottom: 10, marginTop: 10 }}
+                onClick={() => {
+                  this.setState({ screen: "signup" })
+                }}
+              >
+                Sign-Up
+              </Button>
 
-              }}
-            >
-              Login
-            </Button>
-            <p>If you DO NOT HAVE a keyset, press Generate</p>
-            <p>It will generate your key pair then enter them above to login</p>
-            <p>PLEASE SAVE THESE TWO KEYS IN ORDER TO LOGIN AGAIN</p>
-            <Button variant="contained"
-              color="primary"
-              style={{ marginBottom: 10, marginTop: 10 }}
-              onClick={() => {
-                this.generateKeyPair()
-                this.setState({ showSignUp: true });
-                getAllUsers(keyset);
-              }}
-            >
-              Generate
-            </Button>
-            <p>Public key:</p>
-            <p>{this.state.publicKeyGen}</p>
-            <p>Private key:</p>
-            <p>{this.state.secretKeyGen}</p>
-            {this.showSignUp(setUserName, onKeysetChange, keyset, getUserInfo, getAllUsers, allUsers)}
+            </Grid>
+            {this.showTextInputs(
+              keyset,
+              onKeysetChange,
+              setUserName,
+              getUserInfo,
+              getAllUsers,
+              allUsers,
+              getCoinAccountBalance,
+              coinAccountBalance
+            )}
+            </div>
           </Grid>
           }
         </AuthContext.Consumer>
-      </div>
     );
   }
+
 }
 
 export default LoginSignUp;
