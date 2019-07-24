@@ -8,8 +8,8 @@ const Context = React.createContext();
 export class PactBBStore extends React.Component {
 
   state = {
-    //res => [players, bracket, players-bets, status, entry-fee, admin]
-    bracketData: [[], [], [], "", 0, ""],
+    //res => [players, bracket, players-bets, status, entry-fee, admin, winner]
+    bracketData: [[], [], [], "", 0, "", ""],
     bracketNames: [],
     selectedBracketName: "",
     userSelectedBracket: []
@@ -77,7 +77,8 @@ export class PactBBStore extends React.Component {
       //(defun enter-bracket-w-team (bracket-name:string player-key:string team-name:string team-index:integer)
       pactCode: `(brackets.enter-tournament-bb ${JSON.stringify(bracketName)} ${JSON.stringify(playerBracket)})`,
       keyPairs: keyset,
-      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0),
+      envData: { [keyset.publicKey] : [keyset.secretKey] }
     }
     Pact.fetch.send(cmd, API_HOST);
   }
@@ -88,8 +89,13 @@ export class PactBBStore extends React.Component {
     const cmd = {
       pactCode: `(brackets.pay-winner-bb ${JSON.stringify(bracketName)})`,
       keyPairs: keyset,
-      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0),
+      //need secret key of winner too....
+      //will try and refactor to store user guard when they sign-up
+      envData: { [keyset.publicKey] : [keyset.secretKey], [this.state.bracketData[6]]:[""] }
+
     }
+    console.log(cmd);
     Pact.fetch.send(cmd, API_HOST);
   }
 

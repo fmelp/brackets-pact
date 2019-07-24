@@ -80,7 +80,9 @@ export class AuthStore extends React.Component {
     console.log(`creating new user with username: ${username}`);
     const cmdObj = {
       pactCode: `(brackets.init-user ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(username)})`,
-      keyPairs: keyset
+      keyPairs: keyset,
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0),
+      envData: { [keyset.publicKey] : [keyset.secretKey] }
     }
     Pact.fetch.send(cmdObj, API_HOST);
   }

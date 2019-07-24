@@ -120,7 +120,7 @@ class ViewBracketsEB extends React.Component {
       console.log(bracketData[1])
     }
     //show pay winner button
-    if (bracketData[1][bracketData[1].length - 1] !== "winner" && bracketData[2] !== 'initiated'){
+    if (bracketData[1][bracketData[1].length - 1] !== "winner" && bracketData[2] !== 'initiated' && bracketData[2] !== 'winner-paid'){
       components.push(
         <Button variant="contained"
           color="primary"
@@ -137,7 +137,7 @@ class ViewBracketsEB extends React.Component {
         </Button>
       );
     }
-    if (bracketData[3] === 'winner-paid') {
+    if (bracketData[2] === 'winner-paid') {
       components.push(<p>Tournament is over and winner is paid</p>);
     }
     // else {

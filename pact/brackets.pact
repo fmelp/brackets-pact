@@ -121,6 +121,7 @@
     )
 
   (defun coinbase:string (address:string address-guard:guard amount:decimal)
+  ;;took this out too....
     ;(require-capability (COINBASE))
     (with-capability (TRANSFER)
      (credit address address-guard amount))
@@ -149,7 +150,12 @@
       "debit amount must be positive")
 
     (require-capability (TRANSFER))
-    (with-capability (ACCOUNT_GUARD account)
+
+    ;had to remove this because i cannot get the envdata set in front-end
+    ; to reach this point in the function, says it cant find the keyset
+    ;ERROR tx failure for requestKey: "sc2OprIwclSjizrNkBMQb2zXmZMRDcquYFzB1jjyZwI": (enforce-guard g): Failure: Tx Failed: Keyset failure (keys-all)
+
+    ;(with-capability (ACCOUNT_GUARD account)
       (with-read coin-table account
         { "balance" := balance }
 
@@ -157,7 +163,7 @@
         (update coin-table account
           { "balance" : (- balance amount) }
           )))
-    )
+    ;)
 
 
   (defun credit:string (account:string guard:guard amount:decimal)
@@ -350,7 +356,10 @@
     (enforce-brackets-admin)
   )
 
-  ;(use coin)
+  (use coin)
+
+  (defconst CONTRACT_ACCOUNT:string 'master-bracket-keyset)
+  (defun contract-guard:guard () (create-module-guard 'master-bracket-keyset))
 
    ;game initiated, people still signing up
    (defconst INITIATED:string "initiated")
@@ -394,6 +403,7 @@
 
   (defschema users
     username:string
+    user-guard:guard
     balance:integer
     bb-games:list
     bb-admins:list
@@ -443,6 +453,7 @@
     (insert users-table user-key {
       "username": username,
       "balance": 100,
+      "user-guard": (read-keyset user-key),
       "bb-games": [],
       "bb-admins": [],
       "eb-games": [],
@@ -540,8 +551,9 @@
       "bracket":= bracket,
       "status":= status,
       "entryFee":= entry-fee,
-      "admin":= admin}
-      [players, bracket, players-bets, status, entry-fee, admin]
+      "admin":= admin,
+      "winner":= winner}
+      [players, bracket, players-bets, status, entry-fee, admin, winner]
     )
   )
 
@@ -553,8 +565,9 @@
       "status":= status,
       "entryFee":= entry-fee,
       "admin":= admin,
-      "usernames":=usernames}
-      [players, bracket, status, entry-fee, admin, usernames]
+      "usernames":=usernames,
+      "winner":=winner}
+      [players, bracket, status, entry-fee, admin, usernames, winner]
     )
   )
 
@@ -602,6 +615,7 @@
                     "moneyPool": (+ money-pool entry-fee)
                   })
             )
+            (coin.transfer player-key CONTRACT_ACCOUNT (contract-guard) (* entry-fee 1.0))
             )
          )
     )
@@ -645,6 +659,7 @@
                    "balance": (- balance entry-fee)
                  })
             )
+            (coin.transfer player-key CONTRACT_ACCOUNT (contract-guard) (* entry-fee 1.0))
         )
          )
     )
@@ -743,7 +758,8 @@
             (with-capability (BB-CONTRACT-CAN-TRANSFER bracket-name money-pool)
                 (with-read users-table winner-key {
                   "balance":= current-balance-winner,
-                  "games-won":= games-won
+                  "games-won":= games-won,
+                  "user-guard":= winner-guard
                 }
                   (with-read users-table admin-key {
                   "balance":= current-balance-admin
@@ -754,8 +770,11 @@
                       })
                       (update bracket-betting-table bracket-name { "status": WINNER_PAID })
                   )
+                  (coin.transfer CONTRACT_ACCOUNT winner-key winner-guard (* money-pool 1.0))
                 )
+
             )
+
             )
         )
       )
@@ -773,7 +792,8 @@
             (with-capability (EB-CONTRACT-CAN-TRANSFER bracket-name money-pool)
                 (with-read users-table winner-key {
                   "balance":= current-balance-winner,
-                  "games-won":= games-won
+                  "games-won":= games-won,
+                  "user-guard":=winner-guard
                 }
                   (with-read users-table admin-key {
                   "balance":= current-balance-admin
@@ -784,8 +804,11 @@
                       })
                       (update empty-bracket-table bracket-name { "status": WINNER_PAID })
                   )
+                (coin.transfer CONTRACT_ACCOUNT winner-key winner-guard (* money-pool 1.0))
                 )
+
             )
+
             )
         )
         )
@@ -814,3 +837,5 @@
 (create-table users-table)
 (create-table bracket-betting-table)
 (create-table empty-bracket-table)
+;this call is essential and inits the contract in the coin table
+(coin.create-account CONTRACT_ACCOUNT (contract-guard))

@@ -8,8 +8,8 @@ const Context = React.createContext();
 export class PactEBStore extends React.Component {
 
   state = {
-    //res => [players, bracket, status, entry-fee, admin, usernames]
-    bracketData: [[], [], "", "", "", {}],
+    //res => [players, bracket, status, entry-fee, admin, usernames, winner]
+    bracketData: [[], [], "", "", "", {}, ""],
     bracketNames: [],
     selectedBracketName: ""
   };
@@ -62,6 +62,7 @@ export class PactEBStore extends React.Component {
       keyPairs: keyset,
       meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
     }
+
     Pact.fetch.send(cmdObj, API_HOST);
   }
 
@@ -76,8 +77,10 @@ export class PactEBStore extends React.Component {
       //(defun enter-bracket-w-team (bracket-name:string player-key:string team-name:string team-index:integer)
       pactCode: `(brackets.enter-tournament-eb ${JSON.stringify(bracketName)} ${JSON.stringify(playerIndex)})`,
       keyPairs: keyset,
-      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0),
+      envData: { [keyset.publicKey] : [keyset.secretKey] }
     }
+    console.log(cmd)
     Pact.fetch.send(cmd, API_HOST);
   }
 
@@ -105,13 +108,15 @@ export class PactEBStore extends React.Component {
     Pact.fetch.send(cmdObj, API_HOST);
   }
 
+  //have admins keyset, also need winner's....
   payWinner = (keyset, bracketName) => {
     console.log('paying winner eb');
     console.log(`(brackets.pay-winner-eb ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(bracketName)})`)
     const cmd = {
       pactCode: `(brackets.pay-winner-eb ${JSON.stringify(bracketName)})`,
       keyPairs: keyset,
-      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0)
+      meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0),
+      envData: { [keyset.publicKey] : [keyset.secretKey] }
     }
     Pact.fetch.send(cmd, API_HOST);
   }
