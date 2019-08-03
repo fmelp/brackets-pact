@@ -445,11 +445,16 @@
 
   (defcap IS-REGISTERED-USER (user-key:string)
     (let ((users (keys users-table)))
+          ;should be user-id
         (enforce (contains user-key users) "you are not a registered user")
     )
   )
 
+  ;needs to be passed as arg to function (the guard)
+  ;user-key is both id and documents user from payload
+  ;usually its keyset in the arguments
   (defun init-user (user-key:string username:string)
+    ;user id
     (insert users-table user-key {
       "username": username,
       "balance": 100,
@@ -485,6 +490,7 @@
   (defun init-empty-bracket
     (bracket-name:string bracket:list number-players:integer entry-fee:integer)
     "initiate a new bracket"
+    ;sender is id not key...
     (let ((admin-key (at "sender" (chain-data))))
     ;is already a user of our systems
     (with-capability (IS-REGISTERED-USER admin-key)
@@ -492,7 +498,7 @@
       ; anyone can init a new bracket.
        (insert empty-bracket-table bracket-name {
         ;"admin": (at "sender" (chain-data)),
-         "admin": admin-key,
+         "admin": admin-key,;should be a guard
          "bracket": bracket,
          "status": INITIATED,
          "moneyPool": 0,
@@ -630,6 +636,9 @@
 
 
   (defun enter-tournament-bb (bracket-name:string player-bet:list)
+    ;can change this to pass in a keyset then but the keyset data in envdata
+    ; from pact-lang-api
+    ; then use (read-keyset) in the function
     (let ((player-key (at "sender" (chain-data))))
     (with-capability (IS-REGISTERED-USER player-key)
         (with-read users-table player-key {

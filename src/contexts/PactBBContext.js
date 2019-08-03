@@ -77,8 +77,10 @@ export class PactBBStore extends React.Component {
       //(defun enter-bracket-w-team (bracket-name:string player-key:string team-name:string team-index:integer)
       pactCode: `(brackets.enter-tournament-bb ${JSON.stringify(bracketName)} ${JSON.stringify(playerBracket)})`,
       keyPairs: keyset,
+      //meta is only for sure testing purposes
       meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0),
-      envData: { [keyset.publicKey] : [keyset.secretKey] }
+      // envData: { [keyset.publicKey] : [keyset.secretKey] }
+
     }
     Pact.fetch.send(cmd, API_HOST);
   }

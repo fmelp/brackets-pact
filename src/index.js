@@ -9,6 +9,7 @@ import ViewBracketsBB from './components/ViewBracketsBB';
 import ViewBracketsEB from './components/ViewBracketsEB';
 import LoginSignUp from "./components/LoginSignUp";
 import ViewUserInfo from "./components/ViewUserInfo";
+import AllUserInfo from "./components/AllUserInfo"
 import * as serviceWorker from './serviceWorker';
 import { AuthStore } from "./contexts/AuthContext";
 import { PactBBStore } from "./contexts/PactBBContext";
@@ -27,6 +28,7 @@ const routing = (
         <Route exact path="/vieweb" component={ViewBracketsEB} />
         <Route exact path="/login" component={LoginSignUp} />
         <Route exact path="/userinfo" component={ViewUserInfo} />
+        <Route exact path="/allusers" component={AllUserInfo} />
       </div>
     </PactBBStore>
     </PactEBStore>

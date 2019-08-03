@@ -2,6 +2,7 @@ import React from "react";
 import Chip from '@material-ui/core/Chip';
 import Avatar from '@material-ui/core/Avatar';
 import AuthContext from "../contexts/AuthContext";
+import { AccountCircle } from '@material-ui/icons';
 
 class UserIcon extends React.Component {
   render() {
@@ -15,10 +16,10 @@ class UserIcon extends React.Component {
           }
           return (
             <Chip
-              avatar={<Avatar>HI!</Avatar>}
+              avatar={<AccountCircle />}
               label={userName}
               clickable
-              color="primary"
+              color="default"
               onClick={() => {
                 if (userData) {
                   this.props.history.push('/userinfo');

@@ -41,6 +41,7 @@ class CreateBracketBB extends React.Component {
             label={`Team Seed ${i+1}`}
             onChange={(e) => this.onChangeTeamValue(i, e.target.value)}
             margin="normal"
+            className="text-field"
           />
         </div>
       )
@@ -73,8 +74,12 @@ class CreateBracketBB extends React.Component {
         {({ initBracket, test }) => {
           return (
             <div>
+              <div style={{position: "absolute", top: 10, left: 10}}>
+                <img src={require('../images/kadena.png')} />
+              </div>
               <UserIcon history={this.props.history}/>
               <Button variant="contained"
+                className="custom-button"
                 disabled={this.state.buttonDisabled}
                 color="primary"
                 style={{ marginBottom: 10, marginTop: 10 }}
@@ -135,15 +140,21 @@ class CreateBracketBB extends React.Component {
     return (
       <div style={{justifyContent:'center', alignItems:'center'}}>
         <Grid container direction='column' alignItems='center'>
-        <p style={{margin: 5, fontSize: 18}}>Please make sure: </p>
-        <p style={{margin: 5, fontSize: 18}}>1. Team names are distinct and in order of their seed</p>
-        <p style={{margin: 5, fontSize: 18}}>2. Bracket name is not already taken</p>
+        <div className = "background">
+          <div className = "subTitle">Traditional Bracket Betting Section</div>
+          <div className = "titleMsg">Please make sure: </div>
+          <div className="msg-box">
+            <div className="numbers">1.</div> <div className = "ol"> Team names are distinct and in order of their seed</div>
+            <div className="numbers">2.</div> <div className = "ol"> Bracket name is not already taken</div>
+          </div>
+        </div>
         <div style={{ marginBottom: 1 }}>
           <TextField
             id="standard-name"
             label={"Bracket Name"}
             onChange={(e) => this.setState({ bracketName: e.target.value}, this.checkInputValidity())}
             margin="normal"
+            className="text-field"
           />
 
         </div>
@@ -153,10 +164,12 @@ class CreateBracketBB extends React.Component {
           label={"Entry Price"}
           onChange={(e) => this.onChangeEntryPrice(e.target.value)}
           margin="normal"
+          className="text-field"
         />
 
         <Select
           style={{ marginBottom: 10 }}
+          className="text-field"
           native
           value={this.state.numTeams}
           onChange={(e) => {

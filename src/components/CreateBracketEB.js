@@ -44,6 +44,7 @@ class CreateBracketEB extends React.Component {
             <div>
               <UserIcon history={this.props.history}/>
               <Button variant="contained"
+                className="custom-button"
                 disabled={this.state.buttonDisabled}
                 color="primary"
                 style={{ marginBottom: 10, marginTop: 10 }}
@@ -76,22 +77,32 @@ class CreateBracketEB extends React.Component {
   render() {
     return (
       <div style={{justifyContent:'center', alignItems:'center'}}>
+        <div style={{position: "absolute", top: 10, left: 10}}>
+          <img src={require('../images/kadena.png')} />
+        </div>
         <Grid container direction='column' alignItems='center'>
-        <p style={{margin: 5, fontSize: 18}}>Please make sure: </p>
-        <p style={{margin: 5, fontSize: 18}}>1. Bracket name is not already taken</p>
-        <p style={{margin: 5, fontSize: 18}}>2. </p>
+        <div className = "background">
+          <div className = "subTitle">Empty Bracket Betting Section</div>
+          <div className = "titleMsg">Please make sure: </div>
+          <div className="msg-box">
+            <div className="numbers">1.</div> <div className = "ol"> Bracket name is not already taken</div>
+            <div className="numbers">2.</div> <div className = "ol"> Select correct number of participants</div>
+          </div>
+        </div>
         <div style={{ marginBottom: 10 }}>
           <TextField
             id="standard-name"
             label={"Bracket Name"}
             onChange={(e) => this.setState({ bracketName: e.target.value}, this.checkInputValidity())}
             margin="normal"
+            className="text-field"
           />
 
         </div>
         <Select
           style={{ marginBottom: 10 }}
           native
+          className="text-field"
           value={this.state.numTeams}
           onChange={(e) => {
             console.log(e.target.value)
@@ -114,6 +125,7 @@ class CreateBracketEB extends React.Component {
           label={"Entry Price"}
           onChange={(e) => this.onChangeEntryPrice(e.target.value)}
           margin="normal"
+          className="text-field"
         />
 
           <AuthContext.Consumer>

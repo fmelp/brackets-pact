@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import TournamentViewEB from "./TournamentViewEB";
 import UserIcon from './UserIcon';
+import Fab from '@material-ui/core/Fab';
 
 
 class ViewBracketsEB extends React.Component {
@@ -25,6 +26,8 @@ class ViewBracketsEB extends React.Component {
   makeDraw = (teamList) => {
     console.log(this.makeEmptyArray(teamList));
     let teamsCopy = teamList.slice();
+    //shuffle it
+    teamsCopy = this.shuffle(teamsCopy);
     //create empty array format for all rounds
     let roundLists = this.makeEmptyArray(teamList);
     let firstRoundDraw = []
@@ -36,6 +39,26 @@ class ViewBracketsEB extends React.Component {
     }
     roundLists[0] = firstRoundDraw;
     return roundLists;
+  }
+
+  shuffle = (array) => {
+    let counter = array.length;
+
+  // While there are elements in the array
+    while (counter > 0) {
+      // Pick a random index
+      let index = Math.floor(Math.random() * counter);
+
+      // Decrease counter by 1
+      counter--;
+
+      // And swap the last element with it
+      let temp = array[counter];
+      array[counter] = array[index];
+      array[index] = temp;
+  }
+
+    return array;
   }
 
   makeEmptyArray = (teamList) => {
@@ -57,6 +80,7 @@ class ViewBracketsEB extends React.Component {
       const insertIndex = bracketData[0].indexOf("unassigned");
       return (
         <Button variant="contained"
+          className="custom-button"
           color="primary"
           style={{ marginBottom: 10, marginTop: 10 }}
           onClick={() => {
@@ -72,12 +96,12 @@ class ViewBracketsEB extends React.Component {
     } else {
       if (bracketData[0].length !== 0 && bracketData[2] !== 'initiated'){
         return (
-          <p> Tournament is Full!! </p>
+          <div className="status-subtitle"> Tournament is Full!! </div>
         );
       }
       if (bracketData[0].length !== 0 && bracketData[2] === 'initiated'){
         return (
-          <p> You Are Signed Up! Now Waiting for Tournament To Start </p>
+          <div className="status-subtitle"> You Are Signed Up! Now Waiting for Tournament To Start </div>
         );
       }
     }
@@ -87,9 +111,9 @@ class ViewBracketsEB extends React.Component {
     console.log(bracketData)
     const removeBlanks = bracketData[0].filter(x => x !== 'unassigned');
     let components = []
-    components.push(<p>current players:</p>)
+    components.push(<div className="status-subtitle">current players:</div>)
     removeBlanks.map(player => {
-      components.push(<p>{bracketData[5][player]}</p>)
+      components.push(<div className="status-subtitle">{bracketData[5][player]}</div>)
     });
     return components
   }
@@ -98,11 +122,12 @@ class ViewBracketsEB extends React.Component {
     //is admin and tournament not already initiated
     if (keyset.publicKey === bracketData[4]) {
       let components = [];
-      components.push(<p> Admin Functionality: </p>);
+      components.push(<div className="status-subtitle"> Admin Functionality: </div>);
       if  (bracketData[2] === 'initiated') {
       components.push(
         <div>
           <Button variant="contained"
+            className="custom-button"
             color="primary"
             style={{ marginBottom: 10, marginTop: 10 }}
             onClick={() => {
@@ -123,6 +148,7 @@ class ViewBracketsEB extends React.Component {
     if (bracketData[1][bracketData[1].length - 1] !== "winner" && bracketData[2] !== 'initiated' && bracketData[2] !== 'winner-paid'){
       components.push(
         <Button variant="contained"
+          className="custom-button"
           color="primary"
           style={{ marginBottom: 10, marginTop: 10 }}
           onClick={() => {
@@ -138,7 +164,7 @@ class ViewBracketsEB extends React.Component {
       );
     }
     if (bracketData[2] === 'winner-paid') {
-      components.push(<p>Tournament is over and winner is paid</p>);
+      components.push(<div className="status-subtitle">Tournament is over and winner is paid</div>);
     }
     // else {
     //   components.push(<p>None Available at this stage</p>);
@@ -149,7 +175,7 @@ class ViewBracketsEB extends React.Component {
 
   isPlayerWinner = (keyset, bracketData) => {
     if (keyset.publicKey === bracketData[1][bracketData[1].length - 1]){
-      return (<p>You are the winner!</p>);
+      return (<div className="status-subtitle">You are the winner!</div>);
     }
   }
 
@@ -171,7 +197,9 @@ class ViewBracketsEB extends React.Component {
             <div>
             <UserIcon history={this.props.history}/>
             <Grid container direction='column' alignItems='center'>
+              <div className = "subTitle">Empty Bracket Betting Section</div>
               <Button variant="contained"
+                className="custom-button"
                 color="primary"
                 style={{ marginBottom: 10, marginTop: 10 }}
                 onClick={() => {
@@ -200,9 +228,14 @@ class ViewBracketsEB extends React.Component {
                   <option value={name} key={index}>{name}</option>
                 ))}
               </Select>
-              <p>Status: {bracketData[2]}</p>
-              <p>Price to Enter: ${bracketData[3]}</p>
-              <p>Max number of Players: {bracketData[0].length}</p>
+              <Fab variant="extended" className="fab-button"
+                style={bracketData[2]==='initiated' ? {backgroundColor:"#f50056ef"} : {backgroundColor:"green"}} disabled="true">
+                Status: {bracketData[2]}
+              </Fab>
+              <Fab variant="extended"  className="fab-button" style={{backgroundColor:"#f50056ef"}} disabled="true">
+                Price to enter: {bracketData[3]} coins
+              </Fab>
+              <div className="status-subtitle">Max number of Players: {bracketData[0].length}</div>
               {this.showCurrentPlayers(bracketData)}
               {this.showSignUp(enterTournament, bracketData, keyset, selectedBracketName)}
               {this.showAdminButtons(keyset, bracketData, selectedBracketName, advanceBracket, payWinner)}
@@ -220,6 +253,9 @@ class ViewBracketsEB extends React.Component {
   render() {
     return (
       <div>
+        <div style={{position: "absolute", top: 10, left: 10}}>
+          <img src={require('../images/kadena.png')} />
+        </div>
         <AuthContext.Consumer>
           {({ keyset }) =>
             this.showDropdown(keyset)

@@ -11,6 +11,7 @@
     "bracket-user-keyset": ["bracket-user"]
 }
 )
+;read keyset and put in the keyset NAME!!
 
 (begin-tx)
 (load "brackets.pact")

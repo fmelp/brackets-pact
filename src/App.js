@@ -1,66 +1,111 @@
 import React from 'react';
 import './App.css';
+import './main.css';
 import UserIcon from './components/UserIcon';
 import Button from '@material-ui/core/Button';
-import { Link } from 'react-router-dom'
+import Grid from '@material-ui/core/Grid';
+import { Link } from 'react-router-dom';
+
 
 
 class App extends React.Component {
   render() {
     return (
-      <div className="App">
+      <div className="container">
+        <div className = "background">
         <UserIcon history={this.props.history}/>
-        <header className="App-header">
-          <p>
-            Welcome to Kadena's Blockchain Brackets!
-          </p>
+
+          <div className="welcome-style">Welcome to Kadena's Blockchain Brackets!</div>
           <Button variant="contained"
             color="primary"
-            style={{ marginBottom: 10, marginTop: 10 }}
+            style={{ margin: 10, color: "white" }}
             onClick={() => window.location.reload()}
+            className="custom-button"
+            variant="contained"
           >
-            <Link to="/login">Login or Sign-Up</Link>
+            <Link to="/login" style={{ textDecoration: 'none', color: "rgba(225,225,225)" }}>
+              Login or Sign-Up
+            </Link>
           </Button>
-          <p>
-            Traditional Bracket Betting Section:
-          </p>
-          <Button variant="contained"
-            color="primary"
-            style={{ marginBottom: 10, marginTop: 10 }}
-            onClick={() => window.location.reload()}
-          >
-            <Link to="/createbb">Create Your Own Tournament BB</Link>
-          </Button>
+          <Grid container direction='column' alignItems='center'>
+            <div className="menu-color">
+              Bet on Tournament
+            </div>
+            <Grid container direction='row' justify='center'>
+              <Button variant="contained"
+                color="primary"
+                style={{ margin: 20 }}
+                onClick={() => window.location.reload()}
+                className="custom-button"
+                variant="contained"
+              >
+                <Link to="/createbb" style={{ textDecoration: 'none', color: "rgba(225,225,225)" }}>
+                  Administer New Betting Tournament
+                </Link>
+              </Button>
 
-          <Button variant="contained"
-            color="primary"
-            style={{ marginBottom: 10, marginTop: 10 }}
-            onClick={() => window.location.reload()}
-          >
-            <Link to="/viewbb">View or Join Existing Tournaments BB</Link>
-          </Button>
 
-          <p>
-            Empty Bracket Tournament Section:
-          </p>
+              <Button variant="contained"
+                color="primary"
+                style={{ margin: 20 }}
+                onClick={() => window.location.reload()}
+                className="custom-button"
+                variant="contained"
+              >
+                <Link to="/viewbb" style={{ textDecoration: 'none', color: "rgba(225,225,225)" }}>
+                  View or Join Existing Tournaments
+                </Link>
+              </Button>
+            </Grid>
+            <div className="menu-color">
+              Participate in Tournament
+            </div>
+            <Grid container direction='row' justify='center'>
+              <Button variant="contained"
+                color="primary"
+                style={{ margin: 20 }}
+                onClick={() => window.location.reload()}
+                className="custom-button"
+                variant="contained"
+              >
+                <Link to="/createeb" style={{ textDecoration: 'none', color: "rgba(225,225,225)" }}>
+                  Administer New Empty Tournament
+                </Link>
+              </Button>
 
-          <Button variant="contained"
-            color="primary"
-            style={{ marginBottom: 10, marginTop: 10 }}
-            onClick={() => window.location.reload()}
-          >
-            <Link to="/createeb">Create Your Own Tournament EB</Link>
-          </Button>
+              <Button variant="contained"
+                color="primary"
+                style={{ margin: 20 }}
+                onClick={() => window.location.reload()}
+                className="custom-button"
+                variant="contained"
+              >
+                <Link to="/vieweb" style={{ textDecoration: 'none', color: "rgba(225,225,225)" }}>
+                  View or Join Existing Tournaments
+                </Link>
+              </Button>
+            </Grid>
+            <div className="menu-color">
+              View All Players
+            </div>
+            <Button variant="contained"
+              color="primary"
+              style={{ margin: 20 }}
+              onClick={() => window.location.reload()}
+              className="custom-button"
+              variant="contained"
+            >
+              <Link to="/allusers" style={{ textDecoration: 'none', color: "rgba(225,225,225)" }}>
+                View All Players of Tournaments
+              </Link>
+            </Button>
+          </Grid>
 
-          <Button variant="contained"
-            color="primary"
-            style={{ marginBottom: 10, marginTop: 10 }}
-            onClick={() => window.location.reload()}
-          >
-            <Link to="/vieweb">View or Join Existing Tournaments EB</Link>
-          </Button>
 
-        </header>
+        </div>
+          <div style={{position: "absolute", top: 10, left: 10}}>
+            <img src={require('./images/kadena.png')} />
+          </div>
       </div>
     );
   }

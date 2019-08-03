@@ -12,7 +12,7 @@ export class AuthStore extends React.Component {
   state = {
     keyset: {
       publicKey: localStorage.getItem('publicKey'),
-      secretKey: localStorage.getItem('secretKey')
+      secretKey: localStorage.getItem('secretKey').replace(localStorage.getItem('publicKey'), "")
     },
     //[username, bb-games, bb-admins, eb-games, eb-admins, balace, games-won]
     userData: ["", [], [], [], [], "", []],
@@ -82,6 +82,9 @@ export class AuthStore extends React.Component {
       pactCode: `(brackets.init-user ${JSON.stringify(keyset.publicKey)} ${JSON.stringify(username)})`,
       keyPairs: keyset,
       meta: Pact.lang.mkMeta(keyset.publicKey, "", 0, 0),
+      //need to pass the nae of the key instead -> not the public string
+      //need to refactor to pass in user's username in function call
+      //then username: public_key   in envData
       envData: { [keyset.publicKey] : [keyset.secretKey] }
     }
     Pact.fetch.send(cmdObj, API_HOST);
@@ -118,15 +121,16 @@ export class AuthStore extends React.Component {
   //can call this function from any component wrapped by this context
   //it will be very useful when actual users need to input their keyset
   onKeysetChange = (publicKey, secretKey) => {
+    let trucatedSK = secretKey.toString().replace(publicKey, "")
     this.setState({
       keyset: {
         publicKey,
-        secretKey
+        secretKey: trucatedSK
       }
     }, this.setState({
       keyset: {
         publicKey,
-        secretKey
+        secretKey: trucatedSK
       }
     }, console.log(this.state.keyset)));
     //sets these as last know keys for when we refresh the app

@@ -1,0 +1,457 @@
+body{
+    background: url('./images/light.png')no-repeat center center fixed;;
+    text-align: center;
+    font-family: 'Roboto', sans-serif;
+}
+
+.container{
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    height: 90vh;
+}
+
+.appbar{
+    background-color: rgba(255,255,255,0) !important;
+    box-shadow: none !important;
+}
+
+.container-login{
+    padding-top: 40px;
+}
+
+.welcome-style{
+    font-family: 'Roboto', sans-serif;
+    color: rgba(225,225,225);
+    font-weight: bold;
+    font-size: 50px;
+    padding-bottom: 15px;
+}
+
+.welcome-style-log{
+    font-family: 'Roboto', sans-serif;
+    color: rgba(225,225,225);
+    font-weight: bold;
+    font-size: 50px;
+    padding-bottom: 15px;
+
+}
+
+.login-container{
+    padding-top: 30px;
+    padding-bottom: 60px;
+    background: rgba(255,255,255,0.7);
+    font-family: 'Roboto', sans-serif;
+    color:#7A7A7A;
+    font-size: 24px;
+    width: 50%;
+    margin: 0 auto;
+    border-radius: 20px;
+    padding-left: 120px;
+    padding-right: 120px;
+    margin-bottom: 80px;
+    position: relative;
+}
+
+.login-text-container{
+    padding-top: 50px;
+    padding-bottom: 15px;
+    font-family: 'Roboto', sans-serif;
+    width: 50%;
+    margin: 0 auto;
+    border-radius: 20px;
+}
+
+.login-input-container{
+    display: flex;
+    flex-direction: row;
+    height: 70px;
+    padding-bottom: 20px;
+    padding-top:20px;
+}
+
+.login-input-container input, .login-input-container div {
+    background-color: white;
+
+}
+
+.login-input-container input{
+    border-top-right-radius: 100px;
+    border-bottom-right-radius: 100px;
+    border-width: 0px;
+    flex: 1;
+    font-size: 24px;
+    color: #7A7A7A;
+    padding-left: 10px;
+}
+
+.login-input-container input::placeholder{
+    color: lightgrey;
+}
+
+.login-input-container div {
+    border-top-left-radius: 100px;
+    border-bottom-left-radius: 100px;
+    width: 50px;
+    padding-top: 25px;
+    padding-left: 10px;
+}
+
+.login-text{
+    border-radius: 20px;
+    padding-bottom: 20px;
+    margin-top: 20px;
+    background-color: rgba(225,225,225);
+    color: grey;
+}
+
+.custom-button{
+    background-color:#9F76CB !important;
+    color: rgba(225,225,225) !important;
+    width: 250px;
+}
+
+.custom-button-disabled{
+    background-color:grey !important;
+    color: rgba(225,225,225) !important;
+    width: 200px;
+}
+
+.rounded-button-container{
+    position: absolute;
+    bottom: -42px;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100px;
+    background-color: rgba(255,255,255,0.5);
+    padding: 5px;
+    border-radius: 50px;
+}
+
+.rounded-button{
+    height: 90px;
+    width: 90px;
+    border-radius: 45px !important;
+    background-color: #9F76CB !important;
+}
+
+.icon{
+    color: rgba(225,225,225) !important;
+}
+
+.text-alert{
+    font-family: sans-serif;
+    color:white;
+    font-size: 24px;
+    padding-bottom: 40px;
+}
+
+.text-field {
+    width: 700px;
+    font-size: 18px !important;
+    margin-bottom: 20px !important;
+    margin-top: 20px !important;
+    text-align: left !important;
+}
+
+.text-field div::before{
+    border-bottom: 1px solid white;
+}
+
+.text-field input{
+    color: white;
+    margin-left: 20px !important;
+    text-align: left !important;
+}
+
+.text-field label{
+    color: white;
+
+}
+
+.MuiSelect  {
+    margin-left: 20px !important;
+}
+
+
+.key-form{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    margin-top: 30px;
+}
+
+.menu-color{
+    width: 850px;
+    height: 63px;
+    border: 2px solid rgba(225,225,225) !important;
+    font-size: 40px !important;
+    color: rgba(225,225,225) !important;
+    font-style: initial !important;
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: bold !important;
+    font-style: normal !important;
+    text-transform: unset !important;
+    margin-top: 25px !important;
+    margin-bottom: 15px !important;
+    justify-content: center;
+    align-content: center;
+}
+
+
+.menu-separator{
+    flex-direction: column;
+    margin-top: 100px;
+    align-content: center;
+    justify-content: center;
+}
+
+.menu-separator-text{
+    margin-top: 50px;
+    padding-top: 20px;
+}
+
+.custom-button-menu{
+    background-color:#9F76CB !important;
+    color: rgba(225,225,225) !important;
+    font-size: 10px !important;
+    display: block !important;
+
+    margin-right: auto !important;
+    margin-left: auto !important;
+    margin-top: 20px !important;
+}
+
+.custom-button-menu-div{
+    display: grid !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-content: center !important;
+}
+
+
+
+.subTitle{
+    font-family: 'Roboto', sans-serif;
+    color: rgba(225,225,225);
+    font-weight: bold;
+    font-size: 35px;
+    margin-top: 20px;
+}
+
+.titleMsg{
+    font-size: 20px;
+    margin-top: 30px;
+    color: rgba(225,225,225);
+    font-family: 'Roboto', sans-serif;
+    font-weight: bold;
+}
+
+.ol{
+    font-family: 'Roboto', sans-serif;
+    font-size: 15px;
+    color: white;
+    padding-left: 2px;
+    padding-right: 100px;
+}
+
+.msg-box{
+    display: inline-flex;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    align-content: center;
+    align-items: center;
+    margin-left: 20px;
+
+}
+
+.numbers{
+    color: #9F76CB;
+    font-size: 45px;
+}
+
+.select-items{
+    background-color: #9F76CB !important;
+    color: rgba(225,225,225) !important;
+    font-size: 12px !important;
+
+}
+
+.select-items:hover{
+    background-color: plum !important;
+
+}
+
+.text-field .MuiInputBase-root .MuiInputBase-input {
+    text-align: left !important;
+}
+
+.MuiList-padding {
+    background-color: #9F76CB !important;
+}
+
+.username-container{
+    display: flex;
+    align-items: center;
+
+}
+
+.login-input-username{
+    width: 100% !important;
+    padding-left: 10px;
+}
+
+.dialog-title{
+    background-color:#9F76CB;
+    color: rgba(225,225,225);
+}
+
+.button-alert-dialog {
+    background-color:#9F76CB !important;
+    color: white !important;
+    font-size: 10px !important;
+    display: block !important;
+    margin-bottom: 10px !important;
+    margin-right: 10px !important;
+}
+
+.custom-button-menu-notClickable{
+    opacity: 0.8 !important;
+}
+
+.fab-button{
+    color: white !important;
+    text-transform: none !important;
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+    margin-left: 10px !important;
+    margin-bottom: 20px !important;
+    width: 250px !important;
+
+}
+
+
+.status-title{
+    font-family: 'Roboto', sans-serif;
+    color: white;
+    font-size: 47px;
+    margin-top: 15px;
+    padding-bottom: 15px;
+
+}
+
+.status-subtitle{
+    font-family: 'Roboto', sans-serif;
+    color: white;
+    font-size: 18px;
+    margin-top: 25px;
+    margin-bottom: 1px;
+}
+
+.status-note{
+    font-family: 'Roboto', sans-serif;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    margin-top: 25px;
+    padding-bottom: 15px;
+
+}
+.usercard{
+    margin-top: 10%;
+}
+
+.MuiCard-root {
+    overflow: hidden;
+    border-radius: 15px !important;
+    width: 800px;
+    height: 300px;
+    display: inline-block;
+}
+
+.MuiCardContent-root {
+    display: grid;
+    margin-left: 0% !important;
+}
+
+
+.divCard{
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    background-color: #AD68C1;
+}
+
+.cardContent{
+    text-align: -webkit-center;
+    background-color: #9F76CB !important;
+    padding-bottom: 55px !important
+}
+
+.cardContentn{
+    padding: 16px;
+    display: contents;
+    margin-left: 0% !important;
+    text-align: left;
+}
+
+.MuiCardContent-root:last-child {
+    padding-bottom: 24px;
+    margin-left: 15px !important;
+}
+.MuiTypography-body1 {
+    line-height: 2.1 !important;
+}
+
+.userResult{
+    font-weight: bold;
+    display: -webkit-inline-box;
+
+}
+.text-field-id{
+    width: 200px;
+    height: 50px;
+    border-bottom-color: black !important;
+    color: black;
+    font-size: 18px;
+
+}
+.MuiPaper-root{
+    background-color: #AD68C1 !important;
+}
+
+.menu-user{
+    background-color: #AD68C1 !important;
+    font-size: 18px;
+    color: rgba(225,225,225) !important;
+    width: 200px;
+    height: 40px;
+}
+
+.MuiInputBase-input{
+    color: rgba(225,225,225) !important;
+    text-align: center !important;
+    font-size: 15px !important;
+}
+
+.ol-rules {
+    display: flex;
+}
+
+.MuiDialogActions-root{
+    background: white !important;
+}
+
+.ul-players{
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    padding-bottom: 20px;
+    align-items: center;
+    justify-content: center;
+    padding-right: 20px;
+}

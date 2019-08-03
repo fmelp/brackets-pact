@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import TournamentViewBB from "./TournamentViewBB";
 import UserIcon from './UserIcon';
+import Fab from '@material-ui/core/Fab';
 
 class ViewBracketsBB extends React.Component {
 
@@ -27,7 +28,7 @@ class ViewBracketsBB extends React.Component {
     //is not admin and tournament is in initiated stage
     if (bracketData[5] !== keyset.publicKey) {
       components.push(
-        <p>Your Bracket Picks:</p>
+        <div className="status-subtitle">Your Bracket Picks:</div>
       );
       //is player but has not enetered tournament
       console.log(bracketData[0])
@@ -78,14 +79,15 @@ class ViewBracketsBB extends React.Component {
     let components = [];
     //anyone can sign up as long as the tournament hasnt started yet
     if (bracketData[3] === 'initiated' && !bracketData[0].includes(keyset.publicKey) && keyset.publicKey !== bracketData[5]) {
-      components.push(<p>Tournament still open for sign-ups!</p>);
-      components.push(<p>To participate use the bracket below to simulate your choices</p>);
-      components.push(<p>Click on a team to advance it to next round</p>);
-      components.push(<p>Click Sign-Up when your bracket is complete</p>);
-      components.push(<p>NOTE: once you submit you will not be able to change your picks</p>);
+      components.push(<div className="status-subtitle">Tournament still open for sign-ups!</div>);
+      components.push(<div className="status-subtitle">To participate use the bracket below to simulate your choices</div>);
+      components.push(<div className="status-subtitle">Click on a team to advance it to next round</div>);
+      components.push(<div className="status-subtitle">Click Sign-Up when your bracket is complete</div>);
+      components.push(<div className="status-subtitle">NOTE: once you submit you will not be able to change your picks</div>);
       //sign in button
       components.push(
         <Button variant="contained"
+          className="custom-button"
           color="primary"
           //if is admin or is in tournament dont show the button
           // disabled={this.disabledButton(keyset, bracketData)}
@@ -105,11 +107,11 @@ class ViewBracketsBB extends React.Component {
     }
     //tell users when they cant sign up
     if ((bracketData[3] === 'in-progress' || bracketData[3] === 'complete') && !bracketData[0].includes(keyset.publicKey)) {
-      components.push(<p>Sorry, it is too late to join this tournament</p>)
+      components.push(<div className="status-subtitle">Sorry, it is too late to join this tournament</div>)
     }
     //if user is already in the tournamet
     if (bracketData[0].includes(keyset.publicKey)){
-      components.push(<p>You're in this to win this!</p>)
+      components.push(<div className="status-subtitle">You're in this to win this!</div>)
     }
 
     return components;
@@ -118,13 +120,14 @@ class ViewBracketsBB extends React.Component {
   showAdminButtons = (keyset, bracketData, payWinner, selectedBracketName) => {
     let components = []
     if (keyset.publicKey === bracketData[5]){
-      components.push(<p>Current number of players signed up: {bracketData[0].length}</p>);
-      components.push(<p>You are the Admin of this bracket (and cannot play with this account)</p>);
-      components.push(<p>Click on the teams below to advance them to next round</p>);
-      components.push(<p>NOTE: When you advance the tournament no one else will be able to sign up</p>);
+      components.push(<div className="status-subtitle">Current number of players signed up: {bracketData[0].length}</div>);
+      components.push(<div className="status-subtitle">You are the Admin of this bracket (and cannot play with this account)</div>);
+      components.push(<div className="status-subtitle">Click on the teams below to advance them to next round</div>);
+      components.push(<div className="status-subtitle">NOTE: When you advance the tournament no one else will be able to sign up</div>);
       if (bracketData[3] === 'complete') {
         components.push(
           <Button variant="contained"
+            className="custom-button"
             color="primary"
             style={{ marginBottom: 10, marginTop: 10 }}
             onClick={() => {
@@ -140,7 +143,7 @@ class ViewBracketsBB extends React.Component {
         );
       }
       if (bracketData[3] === 'winner-paid') {
-        components.push(<p>Tournament is over and winner is paid</p>);
+        components.push(<div className="status-subtitle">Tournament is over and winner is paid</div>);
       }
     }
     return components
@@ -148,7 +151,7 @@ class ViewBracketsBB extends React.Component {
 
   showRealTimeTournament = (keyset, bracketData) => {
     if (bracketData[3] === 'initiated' && keyset.publicKey !== bracketData[5]) {
-      return (<p>Tournament has not started yet</p>);
+      return (<div className="status-subtitle">Tournament has not started yet</div>);
     } else {
       return (<TournamentViewBB bracketToShow={bracketData[1]}/>);
     }
@@ -173,7 +176,9 @@ class ViewBracketsBB extends React.Component {
             <div>
             <UserIcon history={this.props.history}/>
             <Grid container direction='column' alignItems='center'>
+              <div className = "subTitle">Traditional Bracket Betting Section</div>
               <Button variant="contained"
+                className="custom-button"
                 color="primary"
                 style={{ marginBottom: 10, marginTop: 10 }}
                 onClick={() => {
@@ -202,13 +207,17 @@ class ViewBracketsBB extends React.Component {
                   <option value={name} key={index}>{name}</option>
                 ))}
               </Select>
-              <p>Status: {bracketData[3]}</p>
-              <p>Price to Enter: ${bracketData[4]}</p>
-
+              <Fab variant="extended" className="fab-button"
+                style={bracketData[3]==='initiated' ? {backgroundColor:"#f50056ef"} : {backgroundColor:"green"}} disabled="true">
+                Status: {bracketData[3]}
+              </Fab>
+              <Fab variant="extended"  className="fab-button" style={{backgroundColor:"#f50056ef"}} disabled="true">
+                Price to enter: {bracketData[4]} coins
+              </Fab>
               {this.showSignUp(keyset, bracketData, userSelectedBracket, enterTournament)}
               {this.showPlayerBracket(keyset, bracketData, setUserSelectedBracket, userSelectedBracket)}
               {this.showAdminButtons(keyset, bracketData, payWinner, selectedBracketName)}
-              <p>Real-Time Tournament Status:</p>
+              <div className="status-subtitle">Real-Time Tournament Status:</div>
               {this.showRealTimeTournament(keyset, bracketData)}
 
             </Grid>
@@ -222,6 +231,9 @@ class ViewBracketsBB extends React.Component {
   render() {
     return (
       <div>
+        <div style={{position: "absolute", top: 10, left: 10}}>
+          <img src={require('../images/kadena.png')} />
+        </div>
         <AuthContext.Consumer>
           {({ keyset }) =>
             this.showDropdown(keyset)
